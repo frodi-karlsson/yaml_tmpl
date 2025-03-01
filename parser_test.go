@@ -35,7 +35,7 @@ var DOCUMENT_NODE = []string{
 	"head:",
 	"  children:",
 	"    - title: \"Stupid YAML Website\"",
-	"    - link",
+	"    - link:",
 	"      rel: \"stylesheet\"",
 	"      type: \"text/css\"",
 	"      href: \"/static/style.css\"",
