@@ -17,5 +17,5 @@ body:
         children:
           - raw: "Anyway, the source code can be found "
           - a:
-              href: "https://github.com/frodi-karlsson/yaml-website"
+              href: "https://github.com/frodi-karlsson/yaml_website"
               content: "here"
