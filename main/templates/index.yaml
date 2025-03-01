@@ -9,7 +9,7 @@ body:
   children:
     - h1:
         class: "title"
-        content: "Welcome to the Stupid YAML Website"
+        content: "Welcome to \"the Stupid YAML Website\""
     - p: "The template is written in YAML like God intended"
     - p: "Maybe God will forgive me for this, in the end"
     - p:

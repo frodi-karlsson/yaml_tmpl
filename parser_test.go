@@ -14,6 +14,10 @@ var SIMPLE_SINGLE_QUOTE_RAW_NODE = []string{
 	"tag: 'value'",
 }
 
+var ESCAPED_DOUBLE_QUOTE_RAW_NODE = []string{
+	"tag: \"value \\\"with escaped quotes\\\"\"",
+}
+
 var SIMPLE_CHILDREN_NODE = []string{
 	"tag:",
 	"  child: \"value\"",
@@ -91,6 +95,32 @@ func TestParseSimpleSingleQuoteNode(t *testing.T) {
 
 	if node.Content != "value" {
 		t.Errorf("Expected content to be 'value', got %s", node.Content)
+	}
+}
+
+func TestParseEscapedDoubleQuoteNode(t *testing.T) {
+	// Test a simple raw node
+	nodes, err := yaml_website.GetYamlNodesFromLines(ESCAPED_DOUBLE_QUOTE_RAW_NODE)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if len(nodes) != 1 {
+		t.Errorf("Expected 1 node, got %d", len(nodes))
+	}
+
+	node := nodes[0]
+
+	if node.Key != "tag" {
+		t.Errorf("Expected key to be 'tag', got %s", node.Key)
+	}
+
+	if node.Type != yaml_website.RAW_YAML_NODE {
+		t.Errorf("Expected type to be RAW_NODE, got %d", node.Type)
+	}
+
+	if node.Content != "value \"with escaped quotes\"" {
+		t.Errorf("Expected content to be 'value \"with escaped quotes\"', got %s", node.Content)
 	}
 }
 

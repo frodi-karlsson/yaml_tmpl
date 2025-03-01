@@ -164,9 +164,16 @@ func extractRawContent(lines []string) (string, error) {
 	var insideQuote = false
 	var quoteType = ""
 	var value = ""
+	var escaped = false
 
 	for _, char := range rightHandSide {
-		if char == '\'' || char == '"' {
+		// Treat escaped quotes as a single character.
+		if char == '\\' && !escaped {
+			escaped = true
+			continue
+		}
+
+		if (char == '\'' || char == '"') && !escaped {
 			if !insideQuote {
 				insideQuote = true
 				quoteType = string(char)
@@ -176,6 +183,8 @@ func extractRawContent(lines []string) (string, error) {
 		} else if insideQuote {
 			value += string(char)
 		}
+
+		escaped = false
 	}
 
 	if insideQuote {
