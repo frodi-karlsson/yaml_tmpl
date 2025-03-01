@@ -1,0 +1,8 @@
+description:
+  - "This project is a hopefully not useful go server that leverages yaml as a templating language."
+  - "It's just a way for me to experiment with Go."
+usage:
+  - "Run the server from /main with `go run main.go`"
+  - "Visit `http://localhost:8080` in your browser"
+development:
+  - "Uh... Don't"
