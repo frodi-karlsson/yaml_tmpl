@@ -30,7 +30,12 @@ type HtmlNode struct {
 // Transpiles a raw node to an html node. A raw node is a representation
 // of `tag: "content"` in yaml.
 func transpileRawNode(node YamlNode, parent *HtmlNode) HtmlNode {
-	if !(node.Parent == nil || node.Parent.Key == "children") {
+	isRootHtmlElement := parent == nil
+	isChildElement := node.Parent != nil && node.Parent.Key == "children"
+	isAnyHtmlElement := isRootHtmlElement || isChildElement
+
+	if !isAnyHtmlElement {
+		// content: is special syntax to denote raw innerText.
 		if node.Key == "content" {
 			rawNode := HtmlNode{
 				Type:    RAW_HTML_NODE,
