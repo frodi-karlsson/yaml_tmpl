@@ -1,0 +1,22 @@
+head:
+  children:
+    - title: "Stupid YAML Website"
+    - link:
+        rel: "stylesheet"
+        type: "text/css"
+        href: "/static/style.css"
+body:
+  children:
+    - h1:
+        class: "title"
+        text: "Welcome to the Stupid YAML Website"
+    - p: "The template is written in YAML like God intended"
+    - p: "God, I hope nobody ever sees this"
+    - p: "I'm so sorry"
+    - p:
+        children:
+          - raw: "Anyway, the source code can be found "
+          - a:
+              href: "https://github.com/frodi-karlsson/yaml-website"
+              text: "here"
+    
