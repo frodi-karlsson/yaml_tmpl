@@ -30,49 +30,50 @@ type HtmlNode struct {
 // Transpiles a raw node to an html node. A raw node is a representation
 // of `tag: "content"` in yaml.
 func transpileRawNode(node YamlNode, parent *HtmlNode) HtmlNode {
-	if node.Parent == nil || node.Parent.Key == "children" {
-		rawNode := HtmlNode{
-			Type:    RAW_HTML_NODE,
-			Content: node.Content,
-		}
-
-		if node.Key == "raw" {
-			rawNode.Parent = parent
+	if !(node.Parent == nil || node.Parent.Key == "children") {
+		if node.Key == "content" {
+			rawNode := HtmlNode{
+				Type:    RAW_HTML_NODE,
+				Content: node.Content,
+				Parent:  parent,
+			}
 			return rawNode
-		}
-
-		rawHtmlNode := HtmlNode{
-			Type:     TAG_HTML_NODE,
-			Tag:      node.Key,
-			Children: []HtmlNode{rawNode},
-			Parent:   parent,
-		}
-		rawNode.Parent = &rawHtmlNode
-
-		if len(node.Children) == 0 || node.Key == "content" {
-			return rawHtmlNode
 		}
 
 		return HtmlNode{
 			Type:      ATTRIBUTE_HTML_NODE,
 			Attribute: node.Key,
 			Content:   node.Content,
+			Parent:    parent,
 		}
 	}
-	if node.Key == "content" {
-		rawNode := HtmlNode{
-			Type:    RAW_HTML_NODE,
-			Content: node.Content,
-			Parent:  parent,
-		}
+
+	rawNode := HtmlNode{
+		Type:    RAW_HTML_NODE,
+		Content: node.Content,
+	}
+
+	if node.Key == "raw" {
+		rawNode.Parent = parent
 		return rawNode
+	}
+
+	rawHtmlNode := HtmlNode{
+		Type:     TAG_HTML_NODE,
+		Tag:      node.Key,
+		Children: []HtmlNode{rawNode},
+		Parent:   parent,
+	}
+	rawNode.Parent = &rawHtmlNode
+
+	if len(node.Children) == 0 || node.Key == "content" {
+		return rawHtmlNode
 	}
 
 	return HtmlNode{
 		Type:      ATTRIBUTE_HTML_NODE,
 		Attribute: node.Key,
 		Content:   node.Content,
-		Parent:    parent,
 	}
 }
 
@@ -88,6 +89,7 @@ func transpileChildrenNode(node YamlNode, parent *HtmlNode) HtmlNode {
 
 	children := []HtmlNode{}
 	for _, child := range node.Children {
+		// children: is special syntax to denote child elements.
 		if child.Type == CHILDREN_YAML_NODE && child.Key == "children" {
 			for _, grandchild := range child.Children {
 				children = append(children, TranspileNode(grandchild, &htmlNode))
