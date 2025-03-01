@@ -1,0 +1,22 @@
+<head><title>Stupid YAML Website</title><link rel="stylesheet" type="text/css" href="/static/style.css"></link></head><body><h1 class="title">Welcome to "the Stupid YAML Website"</h1><p>The template is written in YAML like God intended</p><p>Maybe God will forgive me for this, in the end</p><p>Anyway, the source code can be found <a href="https://github.com/frodi-karlsson/yaml_website">here</a></p><p>You can also see the source YAML for this page below:</p><pre>head:
+  children:
+    - title: &#34;Stupid YAML Website&#34;
+    - link:
+        rel: &#34;stylesheet&#34;
+        type: &#34;text/css&#34;
+        href: &#34;/static/style.css&#34;
+body:
+  children:
+    - h1:
+        class: &#34;title&#34;
+        content: &#34;Welcome to \&#34;the Stupid YAML Website\&#34;&#34;
+    - p: &#34;The template is written in YAML like God intended&#34;
+    - p: &#34;Maybe God will forgive me for this, in the end&#34;
+    - p:
+        children:
+          - raw: &#34;Anyway, the source code can be found &#34;
+          - a:
+              href: &#34;https://github.com/frodi-karlsson/yaml_website&#34;
+              content: &#34;here&#34;
+    - p: &#34;You can also see the source YAML for this page below:&#34;
+    - pre: &#34;{{ .YAML }}&#34;</pre></body>
