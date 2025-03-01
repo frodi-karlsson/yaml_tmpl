@@ -9,7 +9,7 @@ body:
   children:
     - h1:
         class: "title"
-        text: "Welcome to the Stupid YAML Website"
+        content: "Welcome to the Stupid YAML Website"
     - p: "The template is written in YAML like God intended"
     - p: "God, I hope nobody ever sees this"
     - p: "I'm so sorry"
@@ -18,5 +18,4 @@ body:
           - raw: "Anyway, the source code can be found "
           - a:
               href: "https://github.com/frodi-karlsson/yaml-website"
-              text: "here"
-    
+              content: "here"

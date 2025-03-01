@@ -34,6 +34,8 @@ type YamlNode struct {
 	//
 	// This contains the lines up until an indentation of the same level or lower.
 	Content string
+	// Nil for a root node.
+	Parent *YamlNode
 }
 
 // Reads a template and returns the content as a string.
@@ -92,12 +94,13 @@ func collectGroups(lines []string) ([][]string, error) {
 }
 
 // Determines the type of a yaml node.
+//
+// The first line passed will be the definition for the parent node,
+// and all following nodes are children.
 func determineNodeType(lines []string) (YamlNodeType, error) {
 	if len(lines) == 0 {
 		return UNKNOWN_YAML_NODE, fmt.Errorf("DetermineNodeType failed: no lines")
 	}
-	// The first node is the definition of the node itself.
-	// E.g: "tag: value" with an optional indentation and "-"
 
 	// If the definition line contains a quotation as defined in QUOTE_TYPES, it is a raw node.
 	for _, quote := range QUOTE_TYPES {
@@ -106,32 +109,37 @@ func determineNodeType(lines []string) (YamlNodeType, error) {
 		}
 	}
 
+	// If we don't have more than one line and it's not raw, it must be unknown.
+	if len(lines) < 2 {
+		return UNKNOWN_YAML_NODE, fmt.Errorf("DetermineNodeType failed: Could not determine node type of one line and no quotes in %v", lines)
+	}
+
+	firstIndentation := len(lines[0]) - len(strings.TrimLeft(lines[0], " "))
+	secondIndentation := len(lines[1]) - len(strings.TrimLeft(lines[1], " "))
+
 	// If the next line has a higher indentation, it is a children node.
-	if len(lines) > 1 {
-		firstIndentation := len(lines[0]) - len(strings.TrimLeft(lines[0], " "))
-		secondIndentation := len(lines[1]) - len(strings.TrimLeft(lines[1], " "))
+	// If it doesn't, we have an empty node and resolve it as an empty string raw node.
+	if secondIndentation <= firstIndentation {
+		return RAW_YAML_NODE, nil
+	}
 
-		if secondIndentation > firstIndentation {
-			nonFirstLineAtFirstIndentationExists := false
+	// If there are no lines at the same indentation as the first line, it is a children node.
+	nonFirstLineAtFirstIndentationExists := false
 
-			for _, line := range lines[1:] {
-				indentation := len(line) - len(strings.TrimLeft(line, " "))
+	for _, line := range lines[1:] {
+		indentation := len(line) - len(strings.TrimLeft(line, " "))
 
-				if indentation == firstIndentation {
-					nonFirstLineAtFirstIndentationExists = true
-					break
-				}
-			}
-
-			if !nonFirstLineAtFirstIndentationExists {
-				return CHILDREN_YAML_NODE, nil
-			}
-
-			return UNKNOWN_YAML_NODE, fmt.Errorf("DetermineNodeType failed: There are lines at the same indentation as the first line in %v", lines)
+		if indentation == firstIndentation {
+			nonFirstLineAtFirstIndentationExists = true
+			break
 		}
 	}
 
-	return UNKNOWN_YAML_NODE, fmt.Errorf("DetermineNodeType failed: Could not determine node type in %v", lines)
+	if !nonFirstLineAtFirstIndentationExists {
+		return CHILDREN_YAML_NODE, nil
+	}
+
+	return UNKNOWN_YAML_NODE, fmt.Errorf("DetermineNodeType failed: There are lines at the same indentation as the first line in %v", lines)
 }
 
 // Extracts the content of a raw node.
@@ -189,7 +197,7 @@ func extractKey(line string) (string, error) {
 	return withoutDash, nil
 }
 
-func parseChildrenNode(lines []string) (YamlNode, error) {
+func parseChildrenNode(lines []string, parent *YamlNode) (YamlNode, error) {
 	if len(lines) == 0 {
 		return YamlNode{}, fmt.Errorf("ParseChildrenNode failed: no lines")
 	}
@@ -199,10 +207,21 @@ func parseChildrenNode(lines []string) (YamlNode, error) {
 		return YamlNode{}, fmt.Errorf("ParseChildrenNode failed: %w", err)
 	}
 
+	key, err := extractKey(lines[0])
+	if err != nil {
+		return YamlNode{}, fmt.Errorf("ParseChildrenNode failed: %w", err)
+	}
+
+	childrenNode := YamlNode{
+		Key:    key,
+		Type:   CHILDREN_YAML_NODE,
+		Parent: parent,
+	}
+
 	children := make([]YamlNode, 0)
 
 	for _, childLines := range childLines {
-		childNode, err := parseNode(childLines)
+		childNode, err := parseNode(childLines, &childrenNode)
 		if err != nil {
 			return YamlNode{}, fmt.Errorf("ParseChildrenNode failed: %w", err)
 		}
@@ -210,19 +229,11 @@ func parseChildrenNode(lines []string) (YamlNode, error) {
 		children = append(children, childNode...)
 	}
 
-	key, err := extractKey(lines[0])
-	if err != nil {
-		return YamlNode{}, fmt.Errorf("ParseChildrenNode failed: %w", err)
-	}
-
-	return YamlNode{
-		Key:      key,
-		Type:     CHILDREN_YAML_NODE,
-		Children: children,
-	}, nil
+	childrenNode.Children = children
+	return childrenNode, nil
 }
 
-func parseRawNode(lines []string) (YamlNode, error) {
+func parseRawNode(lines []string, parent *YamlNode) (YamlNode, error) {
 	if len(lines) == 0 {
 		return YamlNode{}, fmt.Errorf("ParseRawNode failed: no lines")
 	}
@@ -241,17 +252,18 @@ func parseRawNode(lines []string) (YamlNode, error) {
 		Key:     key,
 		Type:    RAW_YAML_NODE,
 		Content: content,
+		Parent:  parent,
 	}, nil
 }
 
-func parseNode(lines []string) ([]YamlNode, error) {
+func parseNode(lines []string, parent *YamlNode) ([]YamlNode, error) {
 	nodeType, err := determineNodeType(lines)
 	if err != nil {
 		return nil, fmt.Errorf("ParseNode failed: %w", err)
 	}
 
 	if nodeType == RAW_YAML_NODE {
-		node, err := parseRawNode(lines)
+		node, err := parseRawNode(lines, parent)
 		if err != nil {
 			return nil, fmt.Errorf("ParseNode failed: %w", err)
 		}
@@ -260,7 +272,7 @@ func parseNode(lines []string) ([]YamlNode, error) {
 	}
 
 	if nodeType == CHILDREN_YAML_NODE {
-		node, err := parseChildrenNode(lines)
+		node, err := parseChildrenNode(lines, parent)
 		if err != nil {
 			return nil, fmt.Errorf("ParseNode failed: %w", err)
 		}
@@ -293,7 +305,7 @@ func GetYamlNodesFromLines(lines []string) ([]YamlNode, error) {
 	nodes := make([]YamlNode, 0)
 
 	for _, topLevelLines := range groups {
-		node, err := parseNode(topLevelLines)
+		node, err := parseNode(topLevelLines, nil)
 		if err != nil {
 			return nil, fmt.Errorf("GetYamlNodesFromLines failed: %w", err)
 		}

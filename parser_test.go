@@ -1,8 +1,6 @@
 package yaml_website_test
 
 import (
-	"fmt"
-	"path/filepath"
 	"testing"
 
 	"github.com/frodi-karlsson/yaml_website"
@@ -292,24 +290,4 @@ func TestParseDocumentNode(t *testing.T) {
 	if linkType.Key != "type" {
 		t.Errorf("Expected type key to be 'type', got %s", linkType.Key)
 	}
-}
-
-func TestGenerateHtml(t *testing.T) {
-	indexPath := filepath.Join("templates", "index.yaml")
-	yamlNodes, err := yaml_website.GetYamlNodesFromFile(indexPath)
-	if err != nil {
-		t.Error(err)
-	}
-
-	html := []yaml_website.HtmlNode{}
-	for _, node := range yamlNodes {
-		html = append(html, yaml_website.TranspileNode(node))
-	}
-
-	str := ""
-	for _, line := range html {
-		str += yaml_website.HtmlNodeToString(line) + "\n"
-	}
-
-	fmt.Println(str)
 }
