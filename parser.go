@@ -2,7 +2,6 @@ package yaml_website
 
 import (
 	"fmt"
-	"os"
 	"strings"
 )
 
@@ -36,21 +35,6 @@ type YamlNode struct {
 	Content string
 	// Nil for a root node.
 	Parent *YamlNode
-}
-
-// Reads a template and returns the content as a string.
-func readTemplate(filename string) (string, error) {
-	content, err := os.ReadFile(filename)
-	if err != nil {
-		return "", fmt.Errorf("ReadTemplate failed to read file: %w", err)
-	}
-
-	return string(content), nil
-}
-
-// Splits a template into lines.
-func splitTemplate(template string) []string {
-	return strings.Split(template, "\n")
 }
 
 // Splits a group of yaml lines into groups of direct children.
@@ -323,15 +307,4 @@ func GetYamlNodesFromLines(lines []string) ([]YamlNode, error) {
 	}
 
 	return nodes, nil
-}
-
-// Gets a yaml file as an array of yaml nodes.
-func GetYamlNodesFromFile(filename string) ([]YamlNode, error) {
-	template, err := readTemplate(filename)
-	if err != nil {
-		return nil, fmt.Errorf("GetYamlNodes failed to read template: %w", err)
-	}
-
-	lines := splitTemplate(template)
-	return GetYamlNodesFromLines(lines)
 }

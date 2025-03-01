@@ -19,3 +19,4 @@ templatingLogic:
     - "'raw' as a child is parsed as a raw html string"
     - "For development simplicity, and lack of need, there is no difference between a sequence and a mapping"
     - "No other yaml features are supported"
+    - "Because it's a transpiler, you can use Go templates in the yaml. For example, `pre: \"{{ .YAML }}\"`"

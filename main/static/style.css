@@ -28,3 +28,11 @@ a:hover {
 a:visited {
     color: #d77;
 }
+
+pre {
+    background: #111;
+    color: #9cf;
+    padding: 1em;
+    border-radius: 5px;
+    overflow: auto;
+}

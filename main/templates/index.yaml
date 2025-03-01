@@ -18,3 +18,5 @@ body:
           - a:
               href: "https://github.com/frodi-karlsson/yaml_website"
               content: "here"
+    - p: "You can also see the source YAML for this page below:"
+    - pre: "{{ .YAML }}"
