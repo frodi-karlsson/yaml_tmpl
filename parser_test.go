@@ -1,6 +1,7 @@
 package yaml_website_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/frodi-karlsson/yaml_website"
@@ -59,16 +60,14 @@ func TestParseSimpleDoubleQuoteNode(t *testing.T) {
 
 	node := nodes[0]
 
-	if node.Key != "tag" {
-		t.Errorf("Expected key to be 'tag', got %s", node.Key)
-	}
+	res, msg := expectYamlNodeToEqual(t, node, yaml_website.YamlNode{
+		Key:     "tag",
+		Type:    yaml_website.RAW_YAML_NODE,
+		Content: "value",
+	})
 
-	if node.Type != yaml_website.RAW_YAML_NODE {
-		t.Errorf("Expected type to be RAW_NODE, got %d", node.Type)
-	}
-
-	if node.Content != "value" {
-		t.Errorf("Expected content to be 'value', got %s", node.Content)
+	if !res {
+		t.Error(msg)
 	}
 }
 
@@ -84,17 +83,14 @@ func TestParseSimpleSingleQuoteNode(t *testing.T) {
 	}
 
 	node := nodes[0]
+	res, msg := expectYamlNodeToEqual(t, node, yaml_website.YamlNode{
+		Key:     "tag",
+		Type:    yaml_website.RAW_YAML_NODE,
+		Content: "value",
+	})
 
-	if node.Key != "tag" {
-		t.Errorf("Expected key to be 'tag', got %s", node.Key)
-	}
-
-	if node.Type != yaml_website.RAW_YAML_NODE {
-		t.Errorf("Expected type to be RAW_NODE, got %d", node.Type)
-	}
-
-	if node.Content != "value" {
-		t.Errorf("Expected content to be 'value', got %s", node.Content)
+	if !res {
+		t.Error(msg)
 	}
 }
 
@@ -110,17 +106,14 @@ func TestParseEscapedDoubleQuoteNode(t *testing.T) {
 	}
 
 	node := nodes[0]
+	res, msg := expectYamlNodeToEqual(t, node, yaml_website.YamlNode{
+		Key:     "tag",
+		Type:    yaml_website.RAW_YAML_NODE,
+		Content: "value \"with escaped quotes\"",
+	})
 
-	if node.Key != "tag" {
-		t.Errorf("Expected key to be 'tag', got %s", node.Key)
-	}
-
-	if node.Type != yaml_website.RAW_YAML_NODE {
-		t.Errorf("Expected type to be RAW_NODE, got %d", node.Type)
-	}
-
-	if node.Content != "value \"with escaped quotes\"" {
-		t.Errorf("Expected content to be 'value \"with escaped quotes\"', got %s", node.Content)
+	if !res {
+		t.Error(msg)
 	}
 }
 
@@ -137,30 +130,20 @@ func TestParseSimpleChildrenNode(t *testing.T) {
 
 	node := nodes[0]
 
-	if node.Key != "tag" {
-		t.Errorf("Expected key to be 'tag', got %s", node.Key)
-	}
+	res, msg := expectYamlNodeToEqual(t, node, yaml_website.YamlNode{
+		Key:  "tag",
+		Type: yaml_website.CHILDREN_YAML_NODE,
+		Children: []yaml_website.YamlNode{
+			{
+				Key:     "child",
+				Type:    yaml_website.RAW_YAML_NODE,
+				Content: "value",
+			},
+		},
+	})
 
-	if node.Type != yaml_website.CHILDREN_YAML_NODE {
-		t.Errorf("Expected type to be CHILDREN_NODE, got %d", node.Type)
-	}
-
-	if len(node.Children) != 1 {
-		t.Errorf("Expected children to have 1 element, got %d", len(node.Children))
-	}
-
-	child := node.Children[0]
-
-	if child.Key != "child" {
-		t.Errorf("Expected child key to be 'child', got %s", child.Key)
-	}
-
-	if child.Type != yaml_website.RAW_YAML_NODE {
-		t.Errorf("Expected child type to be RAW_NODE, got %d", child.Type)
-	}
-
-	if child.Content != "value" {
-		t.Errorf("Expected child content to be 'value', got %s", child.Content)
+	if !res {
+		t.Error(msg)
 	}
 }
 
@@ -177,59 +160,31 @@ func TestParseNestedChildrenNode(t *testing.T) {
 	}
 
 	node := nodes[0]
+	res, msg := expectYamlNodeToEqual(t, node, yaml_website.YamlNode{
+		Key:  "tag",
+		Type: yaml_website.CHILDREN_YAML_NODE,
+		Children: []yaml_website.YamlNode{
+			{
+				Key:  "child",
+				Type: yaml_website.CHILDREN_YAML_NODE,
+				Children: []yaml_website.YamlNode{
+					{
+						Key:     "nested1",
+						Type:    yaml_website.RAW_YAML_NODE,
+						Content: "value",
+					},
+					{
+						Key:     "nested2",
+						Type:    yaml_website.RAW_YAML_NODE,
+						Content: "value",
+					},
+				},
+			},
+		},
+	})
 
-	if node.Key != "tag" {
-		t.Errorf("Expected key to be 'tag', got %s", node.Key)
-	}
-
-	if node.Type != yaml_website.CHILDREN_YAML_NODE {
-		t.Errorf("Expected type to be CHILDREN_NODE, got %d", node.Type)
-	}
-
-	if len(node.Children) != 1 {
-		t.Errorf("Expected children to have 1 element, got %d", len(node.Children))
-	}
-
-	child := node.Children[0]
-
-	if child.Key != "child" {
-		t.Errorf("Expected child key to be 'child', got %s", child.Key)
-	}
-
-	if child.Type != yaml_website.CHILDREN_YAML_NODE {
-		t.Errorf("Expected child type to be CHILDREN_NODE, got %d", child.Type)
-	}
-
-	if len(child.Children) != 2 {
-		t.Errorf("Expected child to have 2 children, got %d", len(child.Children))
-	}
-
-	nested1 := child.Children[0]
-
-	if nested1.Key != "nested1" {
-		t.Errorf("Expected nested1 key to be 'nested1', got %s", nested1.Key)
-	}
-
-	if nested1.Type != yaml_website.RAW_YAML_NODE {
-		t.Errorf("Expected nested1 type to be RAW_NODE, got %d", nested1.Type)
-	}
-
-	if nested1.Content != "value" {
-		t.Errorf("Expected nested1 content to be 'value', got %s", nested1.Content)
-	}
-
-	nested2 := child.Children[1]
-
-	if nested2.Key != "nested2" {
-		t.Errorf("Expected nested2 key to be 'nested2', got %s", nested2.Key)
-	}
-
-	if nested2.Type != yaml_website.RAW_YAML_NODE {
-		t.Errorf("Expected nested2 type to be RAW_NODE, got %d", nested2.Type)
-	}
-
-	if nested2.Content != "value" {
-		t.Errorf("Expected nested2 content to be 'value', got %s", nested2.Content)
+	if !res {
+		t.Error(msg)
 	}
 }
 
@@ -247,77 +202,126 @@ func TestParseDocumentNode(t *testing.T) {
 
 	head := nodes[0]
 
-	if head.Key != "head" {
-		t.Errorf("Expected head key to be 'head', got %s", head.Key)
+	res, msg := expectYamlNodeToEqual(t, head, yaml_website.YamlNode{
+		Key:  "head",
+		Type: yaml_website.CHILDREN_YAML_NODE,
+		Children: []yaml_website.YamlNode{
+			{
+				Key:  "children",
+				Type: yaml_website.CHILDREN_YAML_NODE,
+				Children: []yaml_website.YamlNode{
+					{
+						Key:     "title",
+						Type:    yaml_website.RAW_YAML_NODE,
+						Content: "Stupid YAML Website",
+					},
+					{
+						Key:  "link",
+						Type: yaml_website.CHILDREN_YAML_NODE,
+						Children: []yaml_website.YamlNode{
+							{
+								Key:     "rel",
+								Type:    yaml_website.RAW_YAML_NODE,
+								Content: "stylesheet",
+							},
+							{
+								Key:     "type",
+								Type:    yaml_website.RAW_YAML_NODE,
+								Content: "text/css",
+							},
+							{
+								Key:     "href",
+								Type:    yaml_website.RAW_YAML_NODE,
+								Content: "/static/style.css",
+							},
+						},
+					},
+				},
+			},
+		},
+	})
+
+	if !res {
+		t.Error(msg)
 	}
 
-	if head.Type != yaml_website.CHILDREN_YAML_NODE {
-		t.Errorf("Expected head type to be CHILDREN_NODE, got %d", head.Type)
+	body := nodes[1]
+
+	res, msg = expectYamlNodeToEqual(t, body, yaml_website.YamlNode{
+		Key:  "body",
+		Type: yaml_website.CHILDREN_YAML_NODE,
+		Children: []yaml_website.YamlNode{
+			{
+				Key:  "children",
+				Type: yaml_website.CHILDREN_YAML_NODE,
+				Children: []yaml_website.YamlNode{
+					{
+						Key:  "h1",
+						Type: yaml_website.CHILDREN_YAML_NODE,
+						Children: []yaml_website.YamlNode{
+							{
+								Key:     "class",
+								Type:    yaml_website.RAW_YAML_NODE,
+								Content: "title",
+							},
+							{
+								Key:     "text",
+								Type:    yaml_website.RAW_YAML_NODE,
+								Content: "Welcome to the Stupid YAML Website",
+							},
+						},
+					},
+					{
+						Key:     "p",
+						Type:    yaml_website.RAW_YAML_NODE,
+						Content: "The template is written in YAML like God intended",
+					},
+				},
+			},
+		},
+	})
+
+	if !res {
+		t.Error(msg)
+	}
+}
+
+func expectYamlNodeToEqual(t *testing.T, node yaml_website.YamlNode, expected yaml_website.YamlNode) (bool, string) {
+	return _expectYamlNodeToEqual(t, node, expected, "")
+}
+
+func _expectYamlNodeToEqual(t *testing.T, node yaml_website.YamlNode, expected yaml_website.YamlNode, path string) (bool, string) {
+	pathLogSuffix := "root"
+	if path != "" {
+		pathLogSuffix = path
 	}
 
-	if len(head.Children) != 1 {
-		t.Errorf("Expected head to have 1 child, got %d", len(head.Children))
+	if node.Key != expected.Key {
+		return false, fmt.Sprintf("Expected key to be %s, got %s at %s", expected.Key, node.Key, pathLogSuffix)
 	}
 
-	headChild := head.Children[0]
-
-	if headChild.Key != "children" {
-		t.Errorf("Expected head child key to be 'children', got %s", headChild.Key)
+	if node.Type != expected.Type {
+		return false, fmt.Sprintf("Expected type to be %d, got %d at %s", expected.Type, node.Type, pathLogSuffix)
 	}
 
-	if headChild.Type != yaml_website.CHILDREN_YAML_NODE {
-		t.Errorf("Expected head child type to be CHILDREN_NODE, got %d", headChild.Type)
+	if node.Content != expected.Content {
+		return false, fmt.Sprintf("Expected content to be %s, got %s at %s", expected.Content, node.Content, pathLogSuffix)
 	}
 
-	if len(headChild.Children) != 2 {
-		t.Errorf("Expected head child to have 2 children, got %d", len(headChild.Children))
+	if len(node.Children) != len(expected.Children) {
+		return false, fmt.Sprintf("Expected %d children, got %d at %s", len(expected.Children), len(node.Children), pathLogSuffix)
 	}
 
-	title := headChild.Children[0]
+	for i, child := range node.Children {
+		if i >= len(expected.Children) {
+			return false, fmt.Sprintf("Unexpected child at %d at %s", i, pathLogSuffix)
+		}
 
-	if title.Key != "title" {
-		t.Errorf("Expected title key to be 'title', got %s", title.Key)
+		res, err := expectYamlNodeToEqual(t, child, expected.Children[i])
+		if !res {
+			return false, fmt.Sprintf("Unexpected result: %s for:\n%v", err, child)
+		}
 	}
 
-	if title.Type != yaml_website.RAW_YAML_NODE {
-		t.Errorf("Expected title type to be RAW_NODE, got %d", title.Type)
-	}
-
-	if title.Content != "Stupid YAML Website" {
-		t.Errorf("Expected title content to be 'Stupid YAML Website', got %s", title.Content)
-	}
-
-	link := headChild.Children[1]
-
-	if link.Key != "link" {
-		t.Errorf("Expected link key to be 'link', got %s", link.Key)
-	}
-
-	if link.Type != yaml_website.CHILDREN_YAML_NODE {
-		t.Errorf("Expected link type to be CHILDREN_NODE, got %d", link.Type)
-	}
-
-	if len(link.Children) != 3 {
-		t.Errorf("Expected link to have 3 children, got %d", len(link.Children))
-	}
-
-	rel := link.Children[0]
-
-	if rel.Key != "rel" {
-		t.Errorf("Expected rel key to be 'rel', got %s", rel.Key)
-	}
-
-	if rel.Type != yaml_website.RAW_YAML_NODE {
-		t.Errorf("Expected rel type to be RAW_NODE, got %d", rel.Type)
-	}
-
-	if rel.Content != "stylesheet" {
-		t.Errorf("Expected rel content to be 'stylesheet', got %s", rel.Content)
-	}
-
-	linkType := link.Children[1]
-
-	if linkType.Key != "type" {
-		t.Errorf("Expected type key to be 'type', got %s", linkType.Key)
-	}
+	return true, ""
 }
