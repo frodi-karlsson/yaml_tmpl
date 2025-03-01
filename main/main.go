@@ -54,7 +54,7 @@ func startServer(port *string) {
 }
 
 func buildStatic() error {
-	outDir := "dist"
+	outDir := filepath.Join("..", "docs")
 
 	files, err := filepath.Glob("templates/*.yaml")
 	if err != nil {
