@@ -1,4 +1,4 @@
-<head><title>Stupid YAML Website</title><link rel="stylesheet" type="text/css" href="static/style.css"></link></head><body><h1 class="title">Welcome to "the Stupid YAML Website"</h1><p>The template is written in YAML like God intended</p><p>Maybe God will forgive me for this, in the end</p><p>Anyway, the source code can be found <a href="https://github.com/frodi-karlsson/yaml_website">here</a></p><p>You can also see the source YAML for this page below:</p><pre>head:
+<head><title>Stupid YAML Website</title><link rel="stylesheet" type="text/css" href="static/style.css"></link></head><body><content class="content"><h1 class="title">Welcome to "the Stupid YAML Website"</h1><div class="description"><p>The template is written in YAML, against any and all good sense.</p><p>I wanted to experiment with Go and parsing, and this is the result. Surprisingly, its quite easy to use and read... Maybe this is the future of web development?</p><p>Anyway, the source code for the server can be found <a href="https://github.com/frodi-karlsson/yaml_website">here</a></p></div><div class="source"><p>You can also see the source YAML for this page below:</p><pre>head:
   children:
     - title: &#34;Stupid YAML Website&#34;
     - link:
@@ -7,16 +7,162 @@
         href: &#34;static/style.css&#34;
 body:
   children:
-    - h1:
-        class: &#34;title&#34;
-        content: &#34;Welcome to \&#34;the Stupid YAML Website\&#34;&#34;
-    - p: &#34;The template is written in YAML like God intended&#34;
-    - p: &#34;Maybe God will forgive me for this, in the end&#34;
-    - p:
+    - content:
+        class: &#34;content&#34;
         children:
-          - raw: &#34;Anyway, the source code can be found &#34;
-          - a:
-              href: &#34;https://github.com/frodi-karlsson/yaml_website&#34;
-              content: &#34;here&#34;
-    - p: &#34;You can also see the source YAML for this page below:&#34;
-    - pre: &#34;{{ .YAML }}&#34;</pre></body>
+          - h1:
+              class: &#34;title&#34;
+              content: &#34;Welcome to \&#34;the Stupid YAML Website\&#34;&#34;
+          - div:
+              class: &#34;description&#34;
+              children:
+                - p: &#34;The template is written in YAML, against any and all good sense.&#34;
+                - p: &#34;I wanted to experiment with Go and parsing, and this is the result. Surprisingly, it&#39;s quite easy to use and read... Maybe this is the future of web development?&#34;
+                - p:
+                    children:
+                      - raw: &#34;Anyway, the source code for the server can be found &#34;
+                      - a:
+                          href: &#34;https://github.com/frodi-karlsson/yaml_website&#34;
+                          content: &#34;here&#34;
+          - div:
+              class: &#34;source&#34;
+              children:
+                - p: &#34;You can also see the source YAML for this page below:&#34;
+                - pre: &#34;{{ .YAML }}&#34;
+                - p: &#34;And the CSS below this:&#34;
+                - pre: &#34;{{ .CSS }}&#34;</pre><p>And the CSS below this:</p><pre>html, body {
+    height: 100%;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    background: #111;
+    color: #def;
+    font-family: &#39;Helvetica Neue&#39;, sans-serif;
+
+    margin: 0;
+    padding: 140px 0;
+
+    overflow: auto;
+}
+
+body::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+body::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+}
+
+body::-webkit-scrollbar-thumb:hover, pre::-webkit-scrollbar-thumb:active {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.content {
+    padding: 0px 16px;
+    margin: 0 auto;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    gap: 32px;
+
+    min-height: 100%;
+    max-width: 800px;
+
+}
+
+a {
+    color: #faa;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+a:visited {
+    color: #d77;
+}
+
+@keyframes rainbow {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.source {
+    width: 100%;
+}
+
+pre {
+    background:
+        linear-gradient(45deg, #7002, #7702, #0702, #0772, #0072, #7072, #7002);
+    background-size: 600% 600%;
+    animation: rainbow 40s linear infinite;
+    color: #9cf;
+    padding: 16px;
+    border-radius: 5px;
+    overflow: auto;
+    max-width: calc(100% - 32px);
+
+    border-radius: 16px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+
+    transition: transform 0.2s;
+
+    max-height: 50vh;
+
+    font-size: 20px;
+}
+
+pre:hover {
+    transform: scale(1.01);
+}
+
+pre::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+pre::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+}
+
+pre::-webkit-scrollbar-thumb:hover, pre::-webkit-scrollbar-thumb:active {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+pre::-webkit-scrollbar-corner {
+    background: transparent;
+}
+
+p {
+    width: 100%;
+    font-size: 20px;
+}
+
+h1 {
+    font-size: 48px;
+    margin: 0;
+    padding: 0;
+
+    text-align: center;
+}</pre></div></content></body>

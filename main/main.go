@@ -30,7 +30,13 @@ func startServer(port *string) {
 
 		path := filepath.Join("templates", "index.yaml")
 
-		template, templateData, err := loadTemplate(path, "index")
+		stylesCss, err := os.ReadFile("static/style.css")
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Failed to read style.css: %v", err), http.StatusInternalServerError)
+			return
+		}
+
+		template, templateData, err := loadTemplate(path, "index", string(stylesCss))
 		if err != nil {
 			http.Error(w, fmt.Sprintf("Failed to load template: %v", err), http.StatusInternalServerError)
 			return
@@ -101,9 +107,14 @@ func buildStatic() error {
 		}
 	}
 
+	styleCss, err := os.ReadFile("static/style.css")
+	if err != nil {
+		return fmt.Errorf("BuildStatic failed to read style.css: %w", err)
+	}
+
 	for _, file := range files {
 		// Write yaml
-		template, templateData, err := loadTemplate(file, file)
+		template, templateData, err := loadTemplate(file, filepath.Base(file), string(styleCss))
 		if err != nil {
 			return fmt.Errorf("BuildStatic failed to load template: %w", err)
 		}
@@ -126,7 +137,9 @@ func buildStatic() error {
 	return nil
 }
 
-func loadTemplate(path string, name string) (*template.Template, interface{}, error) {
+// Load a template from a file and return a parsed template and the data to be used with it.
+// You can also pass in a CSS string to be used in the template.
+func loadTemplate(path string, name string, css string) (*template.Template, interface{}, error) {
 	rawContent, err := os.ReadFile(path)
 	if err != nil {
 		return nil, nil, fmt.Errorf("LoadTemplate failed to read file: %w", err)
@@ -139,8 +152,10 @@ func loadTemplate(path string, name string) (*template.Template, interface{}, er
 
 	templateData := struct {
 		YAML string
+		CSS  string
 	}{
 		YAML: string(rawContent),
+		CSS:  css,
 	}
 
 	template, err := template.New(name).Parse(loaded)

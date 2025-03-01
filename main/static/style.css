@@ -2,18 +2,49 @@ html, body {
     height: 100%;
 }
 
+* {
+    box-sizing: border-box;
+}
+
 body {
-    background: #333;
+    background: #111;
     color: #def;
     font-family: 'Helvetica Neue', sans-serif;
 
     margin: 0;
-    padding: 0;
+    padding: 140px 0;
+
+    overflow: auto;
+}
+
+body::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+body::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+}
+
+body::-webkit-scrollbar-thumb:hover, pre::-webkit-scrollbar-thumb:active {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.content {
+    padding: 0px 16px;
+    margin: 0 auto;
 
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+
+    gap: 32px;
+
+    min-height: 100%;
+    max-width: 800px;
+
 }
 
 a {
@@ -29,10 +60,77 @@ a:visited {
     color: #d77;
 }
 
+@keyframes rainbow {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.source {
+    width: 100%;
+}
+
 pre {
-    background: #111;
+    background:
+        linear-gradient(45deg, #7002, #7702, #0702, #0772, #0072, #7072, #7002);
+    background-size: 600% 600%;
+    animation: rainbow 40s linear infinite;
     color: #9cf;
-    padding: 1em;
+    padding: 16px;
     border-radius: 5px;
     overflow: auto;
+    max-width: calc(100% - 32px);
+
+    border-radius: 16px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+
+    transition: transform 0.2s;
+
+    max-height: 50vh;
+
+    font-size: 20px;
+}
+
+pre:hover {
+    transform: scale(1.01);
+}
+
+pre::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+pre::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+}
+
+pre::-webkit-scrollbar-thumb:hover, pre::-webkit-scrollbar-thumb:active {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+pre::-webkit-scrollbar-corner {
+    background: transparent;
+}
+
+p {
+    width: 100%;
+    font-size: 20px;
+}
+
+h1 {
+    font-size: 48px;
+    margin: 0;
+    padding: 0;
+
+    text-align: center;
 }
