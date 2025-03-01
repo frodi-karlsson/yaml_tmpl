@@ -8,7 +8,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/frodi-karlsson/yaml_website"
+	"github.com/frodi-karlsson/yaml_tmpl"
 )
 
 func main() {
@@ -145,7 +145,7 @@ func loadTemplate(path string, name string, css string) (*template.Template, int
 		return nil, nil, fmt.Errorf("LoadTemplate failed to read file: %w", err)
 	}
 
-	loaded, err := yaml_website.LoadTemplate(path)
+	loaded, err := yaml_tmpl.LoadTemplate(path)
 	if err != nil {
 		return nil, nil, fmt.Errorf("LoadTemplate failed to load template: %w", err)
 	}

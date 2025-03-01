@@ -1,12 +1,13 @@
 description:
   - "This project is a hopefully not useful go server that leverages yaml as a templating language."
   - "It's just a way for me to experiment with Go."
+installation:
+  - "You can install the package with `go get github.com/frodi-karlsson/yaml_tmpl`"
 usage:
-  - "Run the server from /main with `go run main.go`"
+  - "Run the example server from /main with `go run main.go`"
   - "Visit `http://localhost:8080` in your browser"
-development:
-  - "Uh... Don't"
-  - "See more on why below"
+  - "Alternatively, you can build the example site statically with `go run main.go -static`. You'll find the output in /main/docs"
+  - "Probably actually don't use this for anything. It's just a toy."
 
 templatingLogic:
   syntaxRules:

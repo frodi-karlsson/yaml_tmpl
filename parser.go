@@ -1,4 +1,4 @@
-package yaml_website
+package yaml_tmpl
 
 import (
 	"fmt"

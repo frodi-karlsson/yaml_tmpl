@@ -1,48 +1,48 @@
-package yaml_website_test
+package yaml_tmpl_test
 
 import (
 	"fmt"
 	"testing"
 
-	"github.com/frodi-karlsson/yaml_website"
+	"github.com/frodi-karlsson/yaml_tmpl"
 )
 
-var SIMPLE_RAW_TAG_HTML_NODE = yaml_website.YamlNode{
+var SIMPLE_RAW_TAG_HTML_NODE = yaml_tmpl.YamlNode{
 	Key:     "tag",
-	Type:    yaml_website.RAW_YAML_NODE,
+	Type:    yaml_tmpl.RAW_YAML_NODE,
 	Content: "value",
 }
 
-func getSimpleRawTagHtmlNode() yaml_website.YamlNode {
-	return yaml_website.YamlNode{
+func getSimpleRawTagHtmlNode() yaml_tmpl.YamlNode {
+	return yaml_tmpl.YamlNode{
 		Key:     "tag",
-		Type:    yaml_website.RAW_YAML_NODE,
+		Type:    yaml_tmpl.RAW_YAML_NODE,
 		Content: "value",
 	}
 }
 
-func getSimpleChildrenHtmlNode() yaml_website.YamlNode {
-	tag := yaml_website.YamlNode{
+func getSimpleChildrenHtmlNode() yaml_tmpl.YamlNode {
+	tag := yaml_tmpl.YamlNode{
 		Key:  "tag",
-		Type: yaml_website.CHILDREN_YAML_NODE,
+		Type: yaml_tmpl.CHILDREN_YAML_NODE,
 	}
 
-	children := yaml_website.YamlNode{
+	children := yaml_tmpl.YamlNode{
 		Key:    "children",
-		Type:   yaml_website.CHILDREN_YAML_NODE,
+		Type:   yaml_tmpl.CHILDREN_YAML_NODE,
 		Parent: &tag,
 	}
 
-	child := yaml_website.YamlNode{
+	child := yaml_tmpl.YamlNode{
 		Key:     "child",
-		Type:    yaml_website.RAW_YAML_NODE,
+		Type:    yaml_tmpl.RAW_YAML_NODE,
 		Content: "value",
 		Parent:  &children,
 	}
 
-	children.Children = []yaml_website.YamlNode{child}
+	children.Children = []yaml_tmpl.YamlNode{child}
 
-	tag.Children = []yaml_website.YamlNode{children}
+	tag.Children = []yaml_tmpl.YamlNode{children}
 
 	return tag
 }
@@ -50,14 +50,14 @@ func getSimpleChildrenHtmlNode() yaml_website.YamlNode {
 func TestParseSimpleRawTagNode(t *testing.T) {
 	SIMPLE_RAW_TAG_HTML_NODE := getSimpleRawTagHtmlNode()
 
-	transpiled := yaml_website.TranspileNode(SIMPLE_RAW_TAG_HTML_NODE, nil)
+	transpiled := yaml_tmpl.TranspileNode(SIMPLE_RAW_TAG_HTML_NODE, nil)
 
-	res, err := expectHtmlNodeToEqual(t, transpiled, yaml_website.HtmlNode{
-		Type: yaml_website.TAG_HTML_NODE,
+	res, err := expectHtmlNodeToEqual(t, transpiled, yaml_tmpl.HtmlNode{
+		Type: yaml_tmpl.TAG_HTML_NODE,
 		Tag:  "tag",
-		Children: []yaml_website.HtmlNode{
+		Children: []yaml_tmpl.HtmlNode{
 			{
-				Type:      yaml_website.RAW_HTML_NODE,
+				Type:      yaml_tmpl.RAW_HTML_NODE,
 				Tag:       "",
 				Attribute: "",
 				Content:   "value",
@@ -73,8 +73,8 @@ func TestParseSimpleRawTagNode(t *testing.T) {
 func TestPrintSimpleHtmlRawTagNode(t *testing.T) {
 	SIMPLE_RAW_TAG_HTML_NODE := getSimpleRawTagHtmlNode()
 
-	transpiled := yaml_website.TranspileNode(SIMPLE_RAW_TAG_HTML_NODE, nil)
-	html := yaml_website.HtmlNodeToString(transpiled)
+	transpiled := yaml_tmpl.TranspileNode(SIMPLE_RAW_TAG_HTML_NODE, nil)
+	html := yaml_tmpl.HtmlNodeToString(transpiled)
 	expected := "<tag>value</tag>"
 	if html != expected {
 		t.Errorf("Expected %s, got %s", expected, html)
@@ -84,18 +84,18 @@ func TestPrintSimpleHtmlRawTagNode(t *testing.T) {
 func TestParseSimpleHtmlChildrenNode(t *testing.T) {
 	SIMPLE_CHILDREN_HTML_NODE := getSimpleChildrenHtmlNode()
 
-	transpiled := yaml_website.TranspileNode(SIMPLE_CHILDREN_HTML_NODE, nil)
-	res, err := expectHtmlNodeToEqual(t, transpiled, yaml_website.HtmlNode{
-		Type: yaml_website.TAG_HTML_NODE,
+	transpiled := yaml_tmpl.TranspileNode(SIMPLE_CHILDREN_HTML_NODE, nil)
+	res, err := expectHtmlNodeToEqual(t, transpiled, yaml_tmpl.HtmlNode{
+		Type: yaml_tmpl.TAG_HTML_NODE,
 		Tag:  "tag",
-		Children: []yaml_website.HtmlNode{
+		Children: []yaml_tmpl.HtmlNode{
 			{
-				Type:      yaml_website.TAG_HTML_NODE,
+				Type:      yaml_tmpl.TAG_HTML_NODE,
 				Tag:       "child",
 				Attribute: "",
-				Children: []yaml_website.HtmlNode{
+				Children: []yaml_tmpl.HtmlNode{
 					{
-						Type:      yaml_website.RAW_HTML_NODE,
+						Type:      yaml_tmpl.RAW_HTML_NODE,
 						Tag:       "",
 						Attribute: "",
 						Content:   "value",
@@ -111,11 +111,11 @@ func TestParseSimpleHtmlChildrenNode(t *testing.T) {
 	}
 }
 
-func expectHtmlNodeToEqual(t *testing.T, node yaml_website.HtmlNode, expected yaml_website.HtmlNode) (bool, string) {
+func expectHtmlNodeToEqual(t *testing.T, node yaml_tmpl.HtmlNode, expected yaml_tmpl.HtmlNode) (bool, string) {
 	return _expectHtmlNodeToEqual(t, node, expected, "")
 }
 
-func _expectHtmlNodeToEqual(t *testing.T, node yaml_website.HtmlNode, expected yaml_website.HtmlNode, path string) (bool, string) {
+func _expectHtmlNodeToEqual(t *testing.T, node yaml_tmpl.HtmlNode, expected yaml_tmpl.HtmlNode, path string) (bool, string) {
 	pathLogSuffix := "root"
 	if path != "" {
 		pathLogSuffix = path

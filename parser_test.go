@@ -1,10 +1,10 @@
-package yaml_website_test
+package yaml_tmpl_test
 
 import (
 	"fmt"
 	"testing"
 
-	"github.com/frodi-karlsson/yaml_website"
+	"github.com/frodi-karlsson/yaml_tmpl"
 )
 
 var SIMPLE_DOUBLE_QUOTE_RAW_NODE = []string{
@@ -49,7 +49,7 @@ var DOCUMENT_NODE = []string{
 
 func TestParseSimpleDoubleQuoteNode(t *testing.T) {
 	// Test a simple raw node
-	nodes, err := yaml_website.GetYamlNodesFromLines(SIMPLE_DOUBLE_QUOTE_RAW_NODE)
+	nodes, err := yaml_tmpl.GetYamlNodesFromLines(SIMPLE_DOUBLE_QUOTE_RAW_NODE)
 	if err != nil {
 		t.Error(err)
 	}
@@ -60,9 +60,9 @@ func TestParseSimpleDoubleQuoteNode(t *testing.T) {
 
 	node := nodes[0]
 
-	res, msg := expectYamlNodeToEqual(t, node, yaml_website.YamlNode{
+	res, msg := expectYamlNodeToEqual(t, node, yaml_tmpl.YamlNode{
 		Key:     "tag",
-		Type:    yaml_website.RAW_YAML_NODE,
+		Type:    yaml_tmpl.RAW_YAML_NODE,
 		Content: "value",
 	})
 
@@ -73,7 +73,7 @@ func TestParseSimpleDoubleQuoteNode(t *testing.T) {
 
 func TestParseSimpleSingleQuoteNode(t *testing.T) {
 	// Test a simple raw node
-	nodes, err := yaml_website.GetYamlNodesFromLines(SIMPLE_SINGLE_QUOTE_RAW_NODE)
+	nodes, err := yaml_tmpl.GetYamlNodesFromLines(SIMPLE_SINGLE_QUOTE_RAW_NODE)
 	if err != nil {
 		t.Error(err)
 	}
@@ -83,9 +83,9 @@ func TestParseSimpleSingleQuoteNode(t *testing.T) {
 	}
 
 	node := nodes[0]
-	res, msg := expectYamlNodeToEqual(t, node, yaml_website.YamlNode{
+	res, msg := expectYamlNodeToEqual(t, node, yaml_tmpl.YamlNode{
 		Key:     "tag",
-		Type:    yaml_website.RAW_YAML_NODE,
+		Type:    yaml_tmpl.RAW_YAML_NODE,
 		Content: "value",
 	})
 
@@ -96,7 +96,7 @@ func TestParseSimpleSingleQuoteNode(t *testing.T) {
 
 func TestParseEscapedDoubleQuoteNode(t *testing.T) {
 	// Test a simple raw node
-	nodes, err := yaml_website.GetYamlNodesFromLines(ESCAPED_DOUBLE_QUOTE_RAW_NODE)
+	nodes, err := yaml_tmpl.GetYamlNodesFromLines(ESCAPED_DOUBLE_QUOTE_RAW_NODE)
 	if err != nil {
 		t.Error(err)
 	}
@@ -106,9 +106,9 @@ func TestParseEscapedDoubleQuoteNode(t *testing.T) {
 	}
 
 	node := nodes[0]
-	res, msg := expectYamlNodeToEqual(t, node, yaml_website.YamlNode{
+	res, msg := expectYamlNodeToEqual(t, node, yaml_tmpl.YamlNode{
 		Key:     "tag",
-		Type:    yaml_website.RAW_YAML_NODE,
+		Type:    yaml_tmpl.RAW_YAML_NODE,
 		Content: "value \"with escaped quotes\"",
 	})
 
@@ -119,7 +119,7 @@ func TestParseEscapedDoubleQuoteNode(t *testing.T) {
 
 func TestParseSimpleChildrenNode(t *testing.T) {
 	// Test a simple children node
-	nodes, err := yaml_website.GetYamlNodesFromLines(SIMPLE_CHILDREN_NODE)
+	nodes, err := yaml_tmpl.GetYamlNodesFromLines(SIMPLE_CHILDREN_NODE)
 	if err != nil {
 		t.Error(err)
 	}
@@ -130,13 +130,13 @@ func TestParseSimpleChildrenNode(t *testing.T) {
 
 	node := nodes[0]
 
-	res, msg := expectYamlNodeToEqual(t, node, yaml_website.YamlNode{
+	res, msg := expectYamlNodeToEqual(t, node, yaml_tmpl.YamlNode{
 		Key:  "tag",
-		Type: yaml_website.CHILDREN_YAML_NODE,
-		Children: []yaml_website.YamlNode{
+		Type: yaml_tmpl.CHILDREN_YAML_NODE,
+		Children: []yaml_tmpl.YamlNode{
 			{
 				Key:     "child",
-				Type:    yaml_website.RAW_YAML_NODE,
+				Type:    yaml_tmpl.RAW_YAML_NODE,
 				Content: "value",
 			},
 		},
@@ -149,7 +149,7 @@ func TestParseSimpleChildrenNode(t *testing.T) {
 
 func TestParseNestedChildrenNode(t *testing.T) {
 	// Test a nested children node
-	nodes, err := yaml_website.GetYamlNodesFromLines(NESTED_CHILDREN_NODE)
+	nodes, err := yaml_tmpl.GetYamlNodesFromLines(NESTED_CHILDREN_NODE)
 
 	if err != nil {
 		t.Error(err)
@@ -160,22 +160,22 @@ func TestParseNestedChildrenNode(t *testing.T) {
 	}
 
 	node := nodes[0]
-	res, msg := expectYamlNodeToEqual(t, node, yaml_website.YamlNode{
+	res, msg := expectYamlNodeToEqual(t, node, yaml_tmpl.YamlNode{
 		Key:  "tag",
-		Type: yaml_website.CHILDREN_YAML_NODE,
-		Children: []yaml_website.YamlNode{
+		Type: yaml_tmpl.CHILDREN_YAML_NODE,
+		Children: []yaml_tmpl.YamlNode{
 			{
 				Key:  "child",
-				Type: yaml_website.CHILDREN_YAML_NODE,
-				Children: []yaml_website.YamlNode{
+				Type: yaml_tmpl.CHILDREN_YAML_NODE,
+				Children: []yaml_tmpl.YamlNode{
 					{
 						Key:     "nested1",
-						Type:    yaml_website.RAW_YAML_NODE,
+						Type:    yaml_tmpl.RAW_YAML_NODE,
 						Content: "value",
 					},
 					{
 						Key:     "nested2",
-						Type:    yaml_website.RAW_YAML_NODE,
+						Type:    yaml_tmpl.RAW_YAML_NODE,
 						Content: "value",
 					},
 				},
@@ -190,7 +190,7 @@ func TestParseNestedChildrenNode(t *testing.T) {
 
 func TestParseDocumentNode(t *testing.T) {
 	// Test a full document node
-	nodes, err := yaml_website.GetYamlNodesFromLines(DOCUMENT_NODE)
+	nodes, err := yaml_tmpl.GetYamlNodesFromLines(DOCUMENT_NODE)
 
 	if err != nil {
 		t.Error(err)
@@ -202,36 +202,36 @@ func TestParseDocumentNode(t *testing.T) {
 
 	head := nodes[0]
 
-	res, msg := expectYamlNodeToEqual(t, head, yaml_website.YamlNode{
+	res, msg := expectYamlNodeToEqual(t, head, yaml_tmpl.YamlNode{
 		Key:  "head",
-		Type: yaml_website.CHILDREN_YAML_NODE,
-		Children: []yaml_website.YamlNode{
+		Type: yaml_tmpl.CHILDREN_YAML_NODE,
+		Children: []yaml_tmpl.YamlNode{
 			{
 				Key:  "children",
-				Type: yaml_website.CHILDREN_YAML_NODE,
-				Children: []yaml_website.YamlNode{
+				Type: yaml_tmpl.CHILDREN_YAML_NODE,
+				Children: []yaml_tmpl.YamlNode{
 					{
 						Key:     "title",
-						Type:    yaml_website.RAW_YAML_NODE,
+						Type:    yaml_tmpl.RAW_YAML_NODE,
 						Content: "Stupid YAML Website",
 					},
 					{
 						Key:  "link",
-						Type: yaml_website.CHILDREN_YAML_NODE,
-						Children: []yaml_website.YamlNode{
+						Type: yaml_tmpl.CHILDREN_YAML_NODE,
+						Children: []yaml_tmpl.YamlNode{
 							{
 								Key:     "rel",
-								Type:    yaml_website.RAW_YAML_NODE,
+								Type:    yaml_tmpl.RAW_YAML_NODE,
 								Content: "stylesheet",
 							},
 							{
 								Key:     "type",
-								Type:    yaml_website.RAW_YAML_NODE,
+								Type:    yaml_tmpl.RAW_YAML_NODE,
 								Content: "text/css",
 							},
 							{
 								Key:     "href",
-								Type:    yaml_website.RAW_YAML_NODE,
+								Type:    yaml_tmpl.RAW_YAML_NODE,
 								Content: "/static/style.css",
 							},
 						},
@@ -247,33 +247,33 @@ func TestParseDocumentNode(t *testing.T) {
 
 	body := nodes[1]
 
-	res, msg = expectYamlNodeToEqual(t, body, yaml_website.YamlNode{
+	res, msg = expectYamlNodeToEqual(t, body, yaml_tmpl.YamlNode{
 		Key:  "body",
-		Type: yaml_website.CHILDREN_YAML_NODE,
-		Children: []yaml_website.YamlNode{
+		Type: yaml_tmpl.CHILDREN_YAML_NODE,
+		Children: []yaml_tmpl.YamlNode{
 			{
 				Key:  "children",
-				Type: yaml_website.CHILDREN_YAML_NODE,
-				Children: []yaml_website.YamlNode{
+				Type: yaml_tmpl.CHILDREN_YAML_NODE,
+				Children: []yaml_tmpl.YamlNode{
 					{
 						Key:  "h1",
-						Type: yaml_website.CHILDREN_YAML_NODE,
-						Children: []yaml_website.YamlNode{
+						Type: yaml_tmpl.CHILDREN_YAML_NODE,
+						Children: []yaml_tmpl.YamlNode{
 							{
 								Key:     "class",
-								Type:    yaml_website.RAW_YAML_NODE,
+								Type:    yaml_tmpl.RAW_YAML_NODE,
 								Content: "title",
 							},
 							{
 								Key:     "text",
-								Type:    yaml_website.RAW_YAML_NODE,
+								Type:    yaml_tmpl.RAW_YAML_NODE,
 								Content: "Welcome to the Stupid YAML Website",
 							},
 						},
 					},
 					{
 						Key:     "p",
-						Type:    yaml_website.RAW_YAML_NODE,
+						Type:    yaml_tmpl.RAW_YAML_NODE,
 						Content: "The template is written in YAML like God intended",
 					},
 				},
@@ -286,11 +286,11 @@ func TestParseDocumentNode(t *testing.T) {
 	}
 }
 
-func expectYamlNodeToEqual(t *testing.T, node yaml_website.YamlNode, expected yaml_website.YamlNode) (bool, string) {
+func expectYamlNodeToEqual(t *testing.T, node yaml_tmpl.YamlNode, expected yaml_tmpl.YamlNode) (bool, string) {
 	return _expectYamlNodeToEqual(t, node, expected, "")
 }
 
-func _expectYamlNodeToEqual(t *testing.T, node yaml_website.YamlNode, expected yaml_website.YamlNode, path string) (bool, string) {
+func _expectYamlNodeToEqual(t *testing.T, node yaml_tmpl.YamlNode, expected yaml_tmpl.YamlNode, path string) (bool, string) {
 	pathLogSuffix := "root"
 	if path != "" {
 		pathLogSuffix = path

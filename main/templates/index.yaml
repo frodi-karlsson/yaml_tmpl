@@ -22,7 +22,7 @@ body:
                     children:
                       - raw: "Anyway, the source code for the server can be found "
                       - a:
-                          href: "https://github.com/frodi-karlsson/yaml_website"
+                          href: "https://github.com/frodi-karlsson/yaml_tmpl"
                           content: "here"
           - div:
               class: "source"
