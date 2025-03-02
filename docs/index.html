@@ -1,4 +1,4 @@
-<head><title>Stupid YAML Website</title><link rel="stylesheet" type="text/css" href="static/style.css"></link><meta name="viewport" content="width=device-width, initial-scale=1"></meta></head><html><body><content class="content"><h1 class="title">Welcome to "the Stupid YAML Website"</h1><div class="description"><p>The template is written in YAML, against any and all good sense.</p><p>I wanted to experiment with Go and parsing, and this is the result. Surprisingly, its quite easy to use and read... Maybe this is the future of web development?</p><p>Anyway, the source code for the server can be found <a href="https://github.com/frodi-karlsson/yaml_tmpl">here</a></p><p>This is a repeated paragraph. Its here to show that you can use YAML anchors and aliases.</p></div><div class="source"><p>You can also see the source YAML for this page below:</p><pre>head:
+<head><title>Stupid YAML Website</title><link rel="stylesheet" type="text/css" href="static/style.css"></link><meta name="viewport" content="width=device-width, initial-scale=1"></meta></head><html><body><content class="content"><h1 class="title">Welcome to "the Stupid YAML Website"</h1><div class="description"><p>The template is written in YAML, against any and all good sense.</p><p>I wanted to experiment with Go and parsing, and this is the result. Surprisingly, its quite easy to use and read... Maybe this is the future of web development?</p><p>Anyway, the source code for the server can be found <a href="https://github.com/frodi-karlsson/yaml_tmpl">here</a></p></div><div class="source"><p>You can also see the source YAML for this page below:</p><pre>head:
   children:
     - title: &#34;Stupid YAML Website&#34; # This is shorthand for children: - raw: &#34;...&#34;
     - link:
@@ -30,7 +30,6 @@ content &amp;content:
                 - a:
                     href: &#34;https://github.com/frodi-karlsson/yaml_tmpl&#34;
                     innerText: &#34;here&#34;
-          - p: &#34;This is a repeated paragraph. It&#39;s here to show that you can use YAML anchors and aliases.&#34;
     - div:
         class: &#34;source&#34;
         children:

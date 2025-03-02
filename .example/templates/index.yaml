@@ -30,7 +30,6 @@ content &content:
                 - a:
                     href: "https://github.com/frodi-karlsson/yaml_tmpl"
                     innerText: "here"
-          - p: "This is a repeated paragraph. It's here to show that you can use YAML anchors and aliases."
     - div:
         class: "source"
         children:
