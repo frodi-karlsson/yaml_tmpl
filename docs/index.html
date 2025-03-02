@@ -1,4 +1,4 @@
-<head><title>Stupid YAML Website</title><link rel="stylesheet" type="text/css" href="static/style.css"></link><meta name="viewport" content="width=device-width, initial-scale=1"></meta></head><html><body><div class="content"><h1 class="title">Welcome to "the Stupid YAML Website"</h1><div class="description"><p>The template is written in YAML, against any and all good sense.</p><p>I wanted to experiment with Go and parsing, and this is the result. Surprisingly, its quite easy to use and read... Maybe this is the future of web development?</p><p>Anyway, the source code for the server can be found <a href="https://github.com/frodi-karlsson/yaml_tmpl">here</a></p></div><div class="source"><p>You can also see the source YAML for this page below:</p><pre>head:
+<head><title>Stupid YAML Website</title><link rel="stylesheet" type="text/css" href="static/style.css"></link><meta name="viewport" content="width=device-width, initial-scale=1"></meta></head><html><body><div><content class="content"><h1 class="title">Welcome to "the Stupid YAML Website"</h1><div class="description"><p>The template is written in YAML, against any and all good sense.</p><p>I wanted to experiment with Go and parsing, and this is the result. Surprisingly, its quite easy to use and read... Maybe this is the future of web development?</p><p>Anyway, the source code for the server can be found <a href="https://github.com/frodi-karlsson/yaml_tmpl">here</a></p></div><div class="source"><p>You can also see the source YAML for this page below:</p><pre>head:
   children:
     - title: &#34;Stupid YAML Website&#34; # This is shorthand for children: - raw: &#34;...&#34;
     - link:
@@ -13,7 +13,7 @@
 # to suit HTML better. The difference is that the value of the anchor is not
 # &#34;real&#34;, and only gets transpiled when it&#39;s aliased.
 # See further down in html for an example.
-content &amp;content:
+content: &amp;content
   class: &#34;content&#34;
   children:
     - h1:
@@ -42,8 +42,7 @@ html:
   children:
     - body:
       children:
-        - div:
-          &lt;&lt;: *content</pre><p>And the CSS below this:</p><pre>html, body {
+        - div: *content</pre><p>And the CSS below this:</p><pre>html, body {
     height: 100%;
 }
 
@@ -194,4 +193,4 @@ h1 {
     padding: 0;
 
     text-align: center;
-}</pre></div></div></body></html>
+}</pre></div></content></div></body></html>
