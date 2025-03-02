@@ -48,7 +48,7 @@ func collectGroups(lines []string) ([][]string, error) {
 
 	topLevelIndent := getIndentation(lines[0])
 
-	var elements = make([][]string, 0)
+	var elements = make([][]string, 0, length)
 	var element = []string{}
 
 	for _, line := range lines {
@@ -58,14 +58,17 @@ func collectGroups(lines []string) ([][]string, error) {
 		}
 
 		indentation := getIndentation(line)
+
+		if indentation < topLevelIndent {
+			return nil, fmt.Errorf("CollectGroups failed: indentation level is lower than top level")
+		}
+
 		isTopLevel := indentation == topLevelIndent
 
 		// If the line is at the same indentation as the first line, we have a new element.
 		if isTopLevel {
 			elements = append(elements, element)
 			element = []string{line}
-		} else if indentation < topLevelIndent {
-			return nil, fmt.Errorf("CollectGroups failed: indentation is less than top level")
 		} else {
 			element = append(element, line)
 		}
@@ -83,19 +86,23 @@ func collectGroups(lines []string) ([][]string, error) {
 // The first line passed will be the definition for the parent node,
 // and all following nodes are children.
 func determineNodeType(lines []string) (YamlNodeType, error) {
-	if len(lines) == 0 {
+	lineLength := len(lines)
+
+	if lineLength == 0 {
 		return UNKNOWN_YAML_NODE, fmt.Errorf("DetermineNodeType failed: no lines")
 	}
 
 	// If the definition line contains a quotation as defined in QUOTE_TYPES, it is a raw node.
-	for _, quote := range _QUOTE_TYPES {
-		if strings.Contains(lines[0], quote) {
-			return RAW_YAML_NODE, nil
+	for _, char := range lines[0] {
+		for _, quoteType := range _QUOTE_TYPES {
+			if string(char) == quoteType {
+				return RAW_YAML_NODE, nil
+			}
 		}
 	}
 
 	// If we don't have more than one line and it's not raw, it must be unknown.
-	if len(lines) < 2 {
+	if lineLength < 2 {
 		return UNKNOWN_YAML_NODE, fmt.Errorf("DetermineNodeType failed: Could not determine node type of one line and no quotes in %v", lines)
 	}
 
@@ -129,26 +136,28 @@ func determineNodeType(lines []string) (YamlNodeType, error) {
 
 // Extracts the content of a raw node.
 func extractRawContent(lines []string) (string, error) {
-	if len(lines) == 0 {
+	lineLength := len(lines)
+
+	if lineLength == 0 {
 		return "", fmt.Errorf("ExtractRawContent failed: no lines")
 	}
 
-	if len(lines) > 1 {
+	if lineLength > 1 {
 		return "", fmt.Errorf("ExtractRawContent failed: too many lines")
 	}
 
 	definition := lines[0]
 
-	split := strings.SplitN(definition, ":", 2)
-	if len(split) < 2 {
+	colonIndex := strings.Index(definition, ":")
+	if colonIndex == -1 {
 		return "", fmt.Errorf("ExtractRawContent failed: no colon in %s", definition)
 	}
 
-	rightHandSide := split[1]
+	rightHandSide := definition[colonIndex+1:]
 
 	var insideQuote = false
-	var quoteType = ""
-	var value = ""
+	var quoteType rune
+	var value = make([]rune, 0, len(rightHandSide))
 	var escaped = false
 
 	for _, char := range rightHandSide {
@@ -161,12 +170,12 @@ func extractRawContent(lines []string) (string, error) {
 		if (char == '\'' || char == '"') && !escaped {
 			if !insideQuote {
 				insideQuote = true
-				quoteType = string(char)
-			} else if quoteType == string(char) {
+				quoteType = char
+			} else if quoteType == char {
 				insideQuote = false
 			}
 		} else if insideQuote {
-			value += string(char)
+			value = append(value, char)
 		}
 
 		escaped = false
@@ -176,16 +185,17 @@ func extractRawContent(lines []string) (string, error) {
 		return "", fmt.Errorf("ExtractRawContent failed: missing closing quote")
 	}
 
-	return value, nil
+	return string(value), nil
 }
 
 // Extracts the key of a node.
 func extractKey(line string) (string, error) {
-	split := strings.SplitN(line, ":", 2)
-	if len(split) < 2 {
+	colonIndex := strings.Index(line, ":")
+	if colonIndex == -1 {
 		return "", fmt.Errorf("ExtractKey failed: no colon in %s", line)
 	}
-	leftHandSide := split[0]
+
+	leftHandSide := line[:colonIndex]
 	trimmedWhitespace := strings.Trim(leftHandSide, " ")
 	withoutDash := strings.TrimLeft(trimmedWhitespace, "- ")
 	return withoutDash, nil
@@ -206,13 +216,12 @@ func parseChildrenNode(lines []string, parent *YamlNode) (*YamlNode, error) {
 		return nil, fmt.Errorf("ParseChildrenNode failed: %w", err)
 	}
 
-	childrenNode := YamlNode{
-		Key:    key,
-		Type:   CHILDREN_YAML_NODE,
-		Parent: parent,
-	}
+	var childrenNode YamlNode
+	childrenNode.Key = key
+	childrenNode.Type = CHILDREN_YAML_NODE
+	childrenNode.Parent = parent
 
-	children := make([]YamlNode, 0)
+	children := make([]YamlNode, 0, len(childLines))
 
 	for _, childLines := range childLines {
 		childNode, err := parseNode(childLines, &childrenNode)
@@ -255,30 +264,18 @@ func parseNode(lines []string, parent *YamlNode) (*YamlNode, error) {
 	if err != nil {
 		return nil, fmt.Errorf("ParseNode failed: %w", err)
 	}
-
-	if nodeType == RAW_YAML_NODE {
-		node, err := parseRawNode(lines, parent)
-		if err != nil {
-			return nil, fmt.Errorf("ParseNode failed: %w", err)
-		}
-
-		return node, nil
+	switch nodeType {
+	case RAW_YAML_NODE:
+		return parseRawNode(lines, parent)
+	case CHILDREN_YAML_NODE:
+		return parseChildrenNode(lines, parent)
+	default:
+		return nil, fmt.Errorf("ParseNode failed: unknown node type")
 	}
-
-	if nodeType == CHILDREN_YAML_NODE {
-		node, err := parseChildrenNode(lines, parent)
-		if err != nil {
-			return nil, fmt.Errorf("ParseNode failed: %w", err)
-		}
-
-		return node, nil
-	}
-
-	return nil, fmt.Errorf("ParseNode failed: unknown node type")
 }
 
 func getNonEmptyLines(lines []string) []string {
-	nonEmptyLines := make([]string, 0)
+	nonEmptyLines := make([]string, 0, len(lines))
 
 	for _, line := range lines {
 		trimmed := strings.Trim(line, " ")
@@ -296,7 +293,7 @@ func GetYamlNodesFromLines(lines []string) ([]YamlNode, error) {
 		return nil, fmt.Errorf("GetYamlNodesFromLines failed: %w", err)
 	}
 
-	nodes := make([]YamlNode, 0)
+	nodes := make([]YamlNode, 0, len(groups))
 
 	for _, topLevelLines := range groups {
 		node, err := parseNode(topLevelLines, nil)

@@ -325,3 +325,33 @@ func _expectYamlNodeToEqual(t *testing.T, node yaml_tmpl.YamlNode, expected yaml
 
 	return true, ""
 }
+
+func BenchmarkParseSimpleDoubleQuoteNode(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		yaml_tmpl.GetYamlNodesFromLines(SIMPLE_DOUBLE_QUOTE_RAW_NODE)
+	}
+}
+
+func BenchmarkParseSimpleSingleQuoteNode(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		yaml_tmpl.GetYamlNodesFromLines(SIMPLE_SINGLE_QUOTE_RAW_NODE)
+	}
+}
+
+func BenchmarkParseEscapedDoubleQuoteNode(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		yaml_tmpl.GetYamlNodesFromLines(ESCAPED_DOUBLE_QUOTE_RAW_NODE)
+	}
+}
+
+func BenchmarkParseSimpleChildrenNode(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		yaml_tmpl.GetYamlNodesFromLines(SIMPLE_CHILDREN_NODE)
+	}
+}
+
+func BenchmarkParseNestedChildrenNode(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		yaml_tmpl.GetYamlNodesFromLines(NESTED_CHILDREN_NODE)
+	}
+}
