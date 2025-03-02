@@ -27,7 +27,7 @@ var SIMPLE_CHILDREN_NODE = []string{
 var NESTED_CHILDREN_NODE = []string{
 	"tag:",
 	"  child:",
-	"    - nested1: \"value\"",
+	"    - nested1: \"value\" # Comments are ignored",
 	"    - nested2: \"value\"",
 }
 

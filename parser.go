@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-var _QUOTE_TYPES = [...]string{"'", "\""}
+var _QUOTE_TYPES = [...]rune{'\'', '"'}
 
 type YamlNodeType int
 
@@ -32,7 +32,17 @@ type YamlNode struct {
 }
 
 func getIndentation(line string) int {
-	return len(line) - len(strings.TrimLeft(line, " "))
+	length := 0
+	for _, char := range line {
+		if char == ' ' {
+			length++
+		} else if char == '\t' {
+			length += 4
+		} else {
+			break
+		}
+	}
+	return length
 }
 
 // Splits a group of yaml lines into groups of direct children.
@@ -49,11 +59,14 @@ func collectGroups(lines []string) ([][]string, error) {
 	topLevelIndent := getIndentation(lines[0])
 
 	var elements = make([][]string, 0, length)
-	var element = []string{}
+	var element = make([]string, 0, length)
+	elementLength := 0
 
 	for _, line := range lines {
-		if len(element) == 0 {
-			element = []string{line}
+		if elementLength == 0 {
+			element = make([]string, 0, length)
+			element = append(element, line)
+			elementLength++
 			continue
 		}
 
@@ -69,8 +82,10 @@ func collectGroups(lines []string) ([][]string, error) {
 		if isTopLevel {
 			elements = append(elements, element)
 			element = []string{line}
+			elementLength = 1
 		} else {
 			element = append(element, line)
+			elementLength++
 		}
 	}
 
@@ -95,7 +110,7 @@ func determineNodeType(lines []string) (YamlNodeType, error) {
 	// If the definition line contains a quotation as defined in QUOTE_TYPES, it is a raw node.
 	for _, char := range lines[0] {
 		for _, quoteType := range _QUOTE_TYPES {
-			if string(char) == quoteType {
+			if char == quoteType {
 				return RAW_YAML_NODE, nil
 			}
 		}
@@ -161,6 +176,10 @@ func extractRawContent(lines []string) (string, error) {
 	var escaped = false
 
 	for _, char := range rightHandSide {
+		if char == '#' && !insideQuote {
+			break
+		}
+
 		// Treat escaped quotes as a single character.
 		if char == '\\' && !escaped {
 			escaped = true
@@ -196,9 +215,8 @@ func extractKey(line string) (string, error) {
 	}
 
 	leftHandSide := line[:colonIndex]
-	trimmedWhitespace := strings.Trim(leftHandSide, " ")
-	withoutDash := strings.TrimLeft(trimmedWhitespace, "- ")
-	return withoutDash, nil
+	trimmed := strings.TrimLeft(leftHandSide, "- ")
+	return trimmed, nil
 }
 
 func parseChildrenNode(lines []string, parent *YamlNode) (*YamlNode, error) {

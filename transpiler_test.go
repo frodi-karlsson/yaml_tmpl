@@ -52,10 +52,10 @@ func TestParseSimpleRawTagNode(t *testing.T) {
 
 	transpiled := SIMPLE_RAW_TAG_HTML_NODE.Transpile(nil)
 
-	res, err := expectHtmlNodeToEqual(t, transpiled, yaml_tmpl.HtmlNode{
+	res, err := expectHtmlNodeToEqual(t, *transpiled, yaml_tmpl.HtmlNode{
 		Type: yaml_tmpl.TAG_HTML_NODE,
 		Tag:  "tag",
-		Children: []yaml_tmpl.HtmlNode{
+		Children: []*yaml_tmpl.HtmlNode{
 			{
 				Type:      yaml_tmpl.RAW_HTML_NODE,
 				Tag:       "",
@@ -74,7 +74,7 @@ func TestPrintSimpleHtmlRawTagNode(t *testing.T) {
 	SIMPLE_RAW_TAG_HTML_NODE := getSimpleRawTagHtmlNode()
 
 	transpiled := SIMPLE_RAW_TAG_HTML_NODE.Transpile(nil)
-	html := transpiled.ToString()
+	html := transpiled.String()
 	expected := "<tag>value</tag>"
 	if html != expected {
 		t.Errorf("Expected %s, got %s", expected, html)
@@ -85,15 +85,15 @@ func TestParseSimpleHtmlChildrenNode(t *testing.T) {
 	SIMPLE_CHILDREN_HTML_NODE := getSimpleChildrenHtmlNode()
 
 	transpiled := SIMPLE_CHILDREN_HTML_NODE.Transpile(nil)
-	res, err := expectHtmlNodeToEqual(t, transpiled, yaml_tmpl.HtmlNode{
+	res, err := expectHtmlNodeToEqual(t, *transpiled, yaml_tmpl.HtmlNode{
 		Type: yaml_tmpl.TAG_HTML_NODE,
 		Tag:  "tag",
-		Children: []yaml_tmpl.HtmlNode{
+		Children: []*yaml_tmpl.HtmlNode{
 			{
 				Type:      yaml_tmpl.TAG_HTML_NODE,
 				Tag:       "child",
 				Attribute: "",
-				Children: []yaml_tmpl.HtmlNode{
+				Children: []*yaml_tmpl.HtmlNode{
 					{
 						Type:      yaml_tmpl.RAW_HTML_NODE,
 						Tag:       "",
@@ -142,11 +142,60 @@ func _expectHtmlNodeToEqual(t *testing.T, node yaml_tmpl.HtmlNode, expected yaml
 	}
 
 	for i, child := range node.Children {
-		res, err := _expectHtmlNodeToEqual(t, child, expected.Children[i], fmt.Sprintf("%s.children[%d]", pathLogSuffix, i))
+		res, err := _expectHtmlNodeToEqual(t, *child, *expected.Children[i], fmt.Sprintf("%s.children[%d]", pathLogSuffix, i))
 		if !res {
 			return res, err
 		}
 	}
 
 	return true, ""
+}
+
+func BenchmarkTranspileSimpleRawTagNode(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		SIMPLE_RAW_TAG_HTML_NODE.Transpile(nil)
+	}
+}
+
+func BenchmarkTranspileSimpleChildrenNode(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		simpleChildrenHtmlNode := getSimpleChildrenHtmlNode()
+		simpleChildrenHtmlNode.Transpile(nil)
+	}
+}
+
+func BenchmarkTranspileSimpleChildrenNodeWithGrandchildren(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		tag := yaml_tmpl.YamlNode{
+			Key:  "tag",
+			Type: yaml_tmpl.CHILDREN_YAML_NODE,
+		}
+
+		children := yaml_tmpl.YamlNode{
+			Key:    "children",
+			Type:   yaml_tmpl.CHILDREN_YAML_NODE,
+			Parent: &tag,
+		}
+
+		grandchildren := yaml_tmpl.YamlNode{
+			Key:    "children",
+			Type:   yaml_tmpl.CHILDREN_YAML_NODE,
+			Parent: &children,
+		}
+
+		grandchild := yaml_tmpl.YamlNode{
+			Key:     "grandchild",
+			Type:    yaml_tmpl.RAW_YAML_NODE,
+			Content: "value",
+			Parent:  &grandchildren,
+		}
+
+		grandchildren.Children = []yaml_tmpl.YamlNode{grandchild}
+
+		children.Children = []yaml_tmpl.YamlNode{grandchildren}
+
+		tag.Children = []yaml_tmpl.YamlNode{children}
+
+		tag.Transpile(nil)
+	}
 }
