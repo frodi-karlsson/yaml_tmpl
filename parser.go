@@ -18,12 +18,6 @@ const (
 	CHILDREN_YAML_NODE
 )
 
-type Element struct {
-	Tag      string
-	Class    string
-	Children []Element
-}
-
 type YamlNode struct {
 	Key  string
 	Type YamlNodeType
@@ -51,10 +45,10 @@ func collectGroups(lines []string) ([][]string, error) {
 	topLevelIndent := len(lines[0]) - len(strings.TrimLeft(lines[0], " "))
 
 	var elements = make([][]string, 0)
-	var element []string = nil
+	var element = []string{}
 
 	for _, line := range lines {
-		if element == nil {
+		if len(element) == 0 {
 			element = []string{line}
 			continue
 		}
@@ -62,17 +56,20 @@ func collectGroups(lines []string) ([][]string, error) {
 		indentation := len(line) - len(strings.TrimLeft(line, " "))
 		isTopLevel := indentation == topLevelIndent
 
+		// If the line is at the same indentation as the first line, we have a new element.
 		if isTopLevel {
 			elements = append(elements, element)
 			element = []string{line}
+		} else if indentation < topLevelIndent {
+			return nil, fmt.Errorf("CollectGroups failed: indentation is less than top level")
 		} else {
 			element = append(element, line)
 		}
 	}
 
-	if element != nil {
-		elements = append(elements, element)
-	}
+	// As we reach the end of the file, we'll always be in the process of building an element.
+	// So we need to append it to the elements list.
+	elements = append(elements, element)
 
 	return elements, nil
 }
