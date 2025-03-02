@@ -13,7 +13,7 @@ head:
 # to suit HTML better. The difference is that the value of the anchor is not
 # "real", and only gets transpiled when it's aliased.
 # See further down in html for an example.
-content &content:
+content: &content
   class: "content"
   children:
     - h1:
@@ -42,5 +42,4 @@ html:
   children:
     - body:
       children:
-        - div:
-          <<: *content
+        - div: *content
