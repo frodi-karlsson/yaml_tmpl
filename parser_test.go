@@ -27,7 +27,7 @@ var SIMPLE_CHILDREN_NODE = []string{
 var NESTED_CHILDREN_NODE = []string{
 	"tag:",
 	"  child:",
-	"    - nested1: \"value\" # Comments are ignored",
+	"    - nested1: \"value\" # Anything after a non-quoted # is ignored by the parser",
 	"    - nested2: \"value\"",
 }
 
@@ -45,6 +45,15 @@ var DOCUMENT_NODE = []string{
 	"        class: \"title\"",
 	"        text: \"Welcome to the Stupid YAML Website\"",
 	"    - p: \"The template is written in YAML like God intended\"",
+}
+
+var RAW_NODE_WITH_ANCHOR_NAME = []string{
+	"tag: &anchor \"value\"",
+}
+
+var SIMPLE_CHILDREN_NODE_WITH_ANCHOR_NAME = []string{
+	"tag: &anchor",
+	"  child: \"value\"",
 }
 
 func TestParseSimpleDoubleQuoteNode(t *testing.T) {
@@ -277,6 +286,62 @@ func TestParseDocumentNode(t *testing.T) {
 						Content: "The template is written in YAML like God intended",
 					},
 				},
+			},
+		},
+	})
+
+	if !res {
+		t.Error(msg)
+	}
+}
+
+func TestParseRawNodeWithAnchorName(t *testing.T) {
+	// Test a simple raw node
+	nodes, err := yaml_tmpl.GetYamlNodesFromLines(RAW_NODE_WITH_ANCHOR_NAME)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if len(nodes) != 1 {
+		t.Errorf("Expected 1 node, got %d", len(nodes))
+	}
+
+	node := nodes[0]
+
+	res, msg := expectYamlNodeToEqual(t, node, yaml_tmpl.YamlNode{
+		Key:        "tag",
+		Type:       yaml_tmpl.RAW_YAML_NODE,
+		Content:    "value",
+		AnchorName: "anchor",
+	})
+
+	if !res {
+		t.Error(msg)
+	}
+}
+
+func TestParseSimpleChildrenNodeWithAnchorName(t *testing.T) {
+	// Test a simple children node
+	nodes, err := yaml_tmpl.GetYamlNodesFromLines(SIMPLE_CHILDREN_NODE_WITH_ANCHOR_NAME)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if len(nodes) != 1 {
+		t.Errorf("Expected 1 node, got %d", len(nodes))
+	}
+
+	node := nodes[0]
+
+	res, msg := expectYamlNodeToEqual(t, node, yaml_tmpl.YamlNode{
+		Key:        "tag",
+		Type:       yaml_tmpl.CHILDREN_YAML_NODE,
+		AnchorName: "anchor",
+		Children: []yaml_tmpl.YamlNode{
+			{
+				Key:     "child",
+				Type:    yaml_tmpl.RAW_YAML_NODE,
+				Content: "value",
 			},
 		},
 	})

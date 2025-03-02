@@ -1,6 +1,6 @@
 head:
   children:
-    - title: "Stupid YAML Website"
+    - title: "Stupid YAML Website" # This is shorthand for children: - raw: "..."
     - link:
         rel: "stylesheet"
         type: "text/css"
@@ -10,14 +10,14 @@ head:
         content: "width=device-width, initial-scale=1"
 html:
   children:
-    body:
+    - body:
       children:
         - content:
             class: "content"
             children:
               - h1:
                   class: "title"
-                  innerText: "Welcome to \"the Stupid YAML Website\""
+                  innerText: "Welcome to \"the Stupid YAML Website\"" # This is shorthand for children: - raw: "...". Similar to the title tag above, but when you also want to add attributes
               - div:
                   class: "description"
                   children:
