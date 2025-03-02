@@ -12,10 +12,10 @@ usage:
 templatingLogic:
   syntaxRules:
     - "Any non-indented key is an html tag"
-    - "If its value is a string, that's the content of the tag"
+    - "If its value is a string, that's the content of the tag. This is a short hand of children: raw: \"{{ . }}\""
     - "If its value is a map, the keys are attributes of the tag"
     - "An attribute with a key of 'children' is a list of child tags"
-    - "An attribute with a key of content is the content of the tag"
+    - "An attribute with a key of 'innerText' will be the inner text of the tag. This is a short hand of children: raw: \"{{ .innerText }}\""
     - "Children of 'children' are html tags"
     - "'raw' as a child is parsed as a raw html string"
     - "For development simplicity, and lack of need, there is no difference between a sequence and a mapping"

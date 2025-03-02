@@ -36,7 +36,7 @@ func transpileRawNode(node YamlNode, parent *HtmlNode) HtmlNode {
 
 	if !isAnyHtmlElement {
 		// content: is special syntax to specify innerText while setting attributes.
-		if node.Key == "content" {
+		if node.Key == "innerText" {
 			rawNode := HtmlNode{
 				Type:    RAW_HTML_NODE,
 				Content: node.Content,
@@ -72,7 +72,7 @@ func transpileRawNode(node YamlNode, parent *HtmlNode) HtmlNode {
 	}
 	rawNode.Parent = &rawHtmlNode
 
-	if len(node.Children) == 0 || node.Key == "content" {
+	if len(node.Children) == 0 || node.Key == "innerText" {
 		return rawHtmlNode
 	}
 
