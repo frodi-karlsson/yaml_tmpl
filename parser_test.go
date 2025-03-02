@@ -468,3 +468,33 @@ func BenchmarkParseNestedChildrenNode(b *testing.B) {
 		yaml_tmpl.GetYamlNodesFromLines(NESTED_CHILDREN_NODE)
 	}
 }
+
+func BenchmarkParseDocumentNode(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		yaml_tmpl.GetYamlNodesFromLines(DOCUMENT_NODE)
+	}
+}
+
+func BenchmarkParseRawNodeWithAnchorName(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		yaml_tmpl.GetYamlNodesFromLines(RAW_NODE_WITH_ANCHOR_NAME)
+	}
+}
+
+func BenchmarkParseSimpleChildrenNodeWithAnchorName(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		yaml_tmpl.GetYamlNodesFromLines(SIMPLE_CHILDREN_NODE_WITH_ANCHOR_NAME)
+	}
+}
+
+func BenchmarkParseAliasNode(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		yaml_tmpl.GetYamlNodesFromLines(ALIAS_NODE)
+	}
+}
+
+func BenchmarkParseOverrideNode(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		yaml_tmpl.GetYamlNodesFromLines(OVERRIDE_NODE)
+	}
+}
