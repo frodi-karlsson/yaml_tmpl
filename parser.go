@@ -16,13 +16,20 @@ const (
 	RAW_YAML_NODE
 	// A children node is a node that contains a tag and a list of children nodes.
 	CHILDREN_YAML_NODE
+
+	// Below types are internal and will never be returned.
+
+	// An alias node is a node that contains a tag and a reference to another node.
+	_ALIAS_YAML_NODE
+	// An override node is an alias node with the tag "<<"
+	_OVERRIDE_YAML_NODE
 )
 
 type YamlNode struct {
 	Key  string
 	Type YamlNodeType
 	// Only used if Type == CHILDREN_NODE
-	Children []YamlNode
+	Children []*YamlNode
 	// Only used if Type == RAW_NODE
 	//
 	// This contains the lines up until an indentation of the same level or lower.
@@ -109,8 +116,10 @@ func determineNodeType(lines []string) (YamlNodeType, error) {
 		return UNKNOWN_YAML_NODE, fmt.Errorf("DetermineNodeType failed: no lines")
 	}
 
+	definition := lines[0]
+
 	// If the definition line contains a quotation as defined in QUOTE_TYPES, it is a raw node.
-	for _, char := range lines[0] {
+	for _, char := range definition {
 		for _, quoteType := range _QUOTE_TYPES {
 			if char == quoteType {
 				return RAW_YAML_NODE, nil
@@ -118,12 +127,25 @@ func determineNodeType(lines []string) (YamlNodeType, error) {
 		}
 	}
 
+	// If the definition line contains an asterisk, it can be an alias or an override.
+	if strings.Contains(definition, "*") {
+		key, err := parseKey(definition)
+		if err != nil {
+			return UNKNOWN_YAML_NODE, fmt.Errorf("DetermineNodeType failed: %w", err)
+		}
+
+		if key == "<<" {
+			return _OVERRIDE_YAML_NODE, nil
+		}
+		return _ALIAS_YAML_NODE, nil
+	}
+
 	// If we don't have more than one line and it's not raw, it must be unknown.
 	if lineLength < 2 {
 		return UNKNOWN_YAML_NODE, fmt.Errorf("DetermineNodeType failed: Could not determine node type of one line and no quotes in %v", lines)
 	}
 
-	firstIndentation := getIndentation(lines[0])
+	firstIndentation := getIndentation(definition)
 	secondIndentation := getIndentation(lines[1])
 
 	// If the next line has a higher indentation, it is a children node.
@@ -238,14 +260,15 @@ func extractAnchorName(line string) (string, string) {
 		return line[:anchorIndex], ""
 	}
 
-	anchorName := make([]byte, 0, lineLength-anchorIndex-1)
+	anchorName := make([]rune, 0, lineLength-anchorIndex-1)
 
-	endIndex := anchorIndex + 1
-	char := line[endIndex]
-	for !isSpecial(char) && endIndex < lineLength-1 {
+	var endIndex int
+	for index, char := range line[anchorIndex+1:] {
+		endIndex = index + anchorIndex + 1
+		if isSpecial(byte(char)) {
+			break
+		}
 		anchorName = append(anchorName, char)
-		endIndex++
-		char = line[endIndex]
 	}
 
 	return line[:anchorIndex] + line[endIndex:], string(anchorName)
@@ -256,12 +279,14 @@ func parseChildrenNode(lines []string, parent *YamlNode, anchorMap map[string]*Y
 		return nil, fmt.Errorf("ParseChildrenNode failed: no lines")
 	}
 
+	definition := lines[0]
+
 	childLines, err := collectGroups(lines[1:])
 	if err != nil {
 		return nil, fmt.Errorf("ParseChildrenNode failed: %w", err)
 	}
 
-	definition, anchorName := extractAnchorName(lines[0])
+	definition, anchorName := extractAnchorName(definition)
 
 	key, err := parseKey(definition)
 	if err != nil {
@@ -274,15 +299,15 @@ func parseChildrenNode(lines []string, parent *YamlNode, anchorMap map[string]*Y
 	childrenNode.Parent = parent
 	childrenNode.AnchorName = anchorName
 
-	children := make([]YamlNode, 0, len(childLines))
+	children := make([]*YamlNode, 0, len(childLines))
 
 	for _, childLines := range childLines {
-		childNode, err := parseNode(childLines, &childrenNode, anchorMap)
+		childNodes, err := parseNode(childLines, &childrenNode, anchorMap)
 		if err != nil {
 			return nil, fmt.Errorf("ParseChildrenNode failed: %w", err)
 		}
 
-		children = append(children, *childNode)
+		children = append(children, childNodes...)
 	}
 
 	childrenNode.Children = children
@@ -326,16 +351,122 @@ func parseRawNode(lines []string, parent *YamlNode, anchorMap map[string]*YamlNo
 	return nodePtr, nil
 }
 
-func parseNode(lines []string, parent *YamlNode, anchorMap map[string]*YamlNode) (*YamlNode, error) {
+func getAnchor(definition string, anchorMap map[string]*YamlNode) (*YamlNode, error) {
+	asteriskIndex := strings.IndexRune(definition, '*')
+	if asteriskIndex == -1 {
+		return nil, fmt.Errorf("GetAnchor failed: no asterisk")
+	}
+
+	anchorName := make([]rune, 0, len(definition)-asteriskIndex-1)
+	for _, char := range definition[asteriskIndex+1:] {
+		if isSpecial(byte(char)) {
+			break
+		}
+		anchorName = append(anchorName, char)
+	}
+
+	anchor, exists := anchorMap[string(anchorName)]
+	if !exists {
+		allValues := ""
+		for key, value := range anchorMap {
+			allValues += key + ", " + value.Key + "\n"
+		}
+		return nil, fmt.Errorf("GetAnchor failed: anchor not found, all values:\n%s", allValues)
+	}
+
+	return anchor, nil
+}
+
+// Parses an alias node.
+func parseAliasNode(lines []string, parent *YamlNode, anchorMap map[string]*YamlNode) (*YamlNode, error) {
+	if len(lines) == 0 {
+		return nil, fmt.Errorf("ParseAliasNode failed: no lines")
+	}
+
+	definition := lines[0]
+	key, err := parseKey(definition)
+	if err != nil {
+		return nil, fmt.Errorf("ParseAliasNode failed: %w", err)
+	}
+
+	anchor, err := getAnchor(definition, anchorMap)
+	if err != nil {
+		return nil, fmt.Errorf("ParseAliasNode failed: %w", err)
+	}
+
+	childrenNode := YamlNode{
+		Key:    key,
+		Type:   CHILDREN_YAML_NODE,
+		Parent: parent,
+	}
+
+	copy := *anchor
+	copy.Parent = &childrenNode
+	childrenNode.Children = []*YamlNode{&copy}
+
+	return &childrenNode, nil
+}
+
+// Parses an override node.
+func parseOverrideNode(lines []string, parent *YamlNode, anchorMap map[string]*YamlNode) ([]*YamlNode, error) {
+	if len(lines) == 0 {
+		return nil, fmt.Errorf("ParseOverrideNode failed: no lines")
+	}
+
+	definition := lines[0]
+
+	anchor, err := getAnchor(definition, anchorMap)
+	if err != nil {
+		return nil, fmt.Errorf("ParseOverrideNode failed: %w", err)
+	}
+
+	if anchor.Type != CHILDREN_YAML_NODE {
+		return nil, fmt.Errorf("ParseOverrideNode failed: anchor is not a children node")
+	}
+
+	childNodes := make([]*YamlNode, 0, len(anchor.Children))
+	for _, child := range anchor.Children {
+		copy := *child
+		copy.Parent = parent
+		childNodes = append(childNodes, &copy)
+	}
+
+	return childNodes, nil
+}
+
+// Parses a node. It returns an array, because override nodes may return multiple nodes.
+func parseNode(lines []string, parent *YamlNode, anchorMap map[string]*YamlNode) ([]*YamlNode, error) {
 	nodeType, err := determineNodeType(lines)
 	if err != nil {
 		return nil, fmt.Errorf("ParseNode failed: %w", err)
 	}
 	switch nodeType {
 	case RAW_YAML_NODE:
-		return parseRawNode(lines, parent, anchorMap)
+		node, err := parseRawNode(lines, parent, anchorMap)
+		if err != nil {
+			return nil, fmt.Errorf("ParseRawNode failed: %w", err)
+		}
+		if node.AnchorName != "" {
+			return []*YamlNode{}, nil
+		}
+		return []*YamlNode{node}, nil
 	case CHILDREN_YAML_NODE:
-		return parseChildrenNode(lines, parent, anchorMap)
+		node, err := parseChildrenNode(lines, parent, anchorMap)
+		if err != nil {
+			return nil, fmt.Errorf("ParseChildrenNode failed: %w", err)
+		}
+		if node.AnchorName != "" {
+			return []*YamlNode{}, nil
+		}
+		return []*YamlNode{node}, nil
+	case _ALIAS_YAML_NODE:
+		node, err := parseAliasNode(lines, parent, anchorMap)
+		if err != nil {
+			return nil, fmt.Errorf("ParseAliasNode failed: %w", err)
+		}
+		return []*YamlNode{node}, nil
+	case _OVERRIDE_YAML_NODE:
+		return parseOverrideNode(lines, parent, anchorMap)
 	default:
 		return nil, fmt.Errorf("ParseNode failed: unknown node type")
 	}
@@ -346,7 +477,7 @@ func getNonEmptyLines(lines []string) []string {
 
 	for _, line := range lines {
 		trimmed := strings.Trim(line, " ")
-		if len(trimmed) > 0 {
+		if len(trimmed) > 0 && trimmed[0] != '#' {
 			nonEmptyLines = append(nonEmptyLines, line)
 		}
 	}
@@ -362,13 +493,17 @@ func GetYamlNodesFromLines(lines []string) ([]YamlNode, error) {
 
 	nodes := make([]YamlNode, 0, len(groups))
 
+	anchorMap := make(map[string]*YamlNode)
+
 	for _, topLevelLines := range groups {
-		node, err := parseNode(topLevelLines, nil, make(map[string]*YamlNode))
+		childNodes, err := parseNode(topLevelLines, nil, anchorMap)
 		if err != nil {
 			return nil, fmt.Errorf("GetYamlNodesFromLines failed: %w", err)
 		}
 
-		nodes = append(nodes, *node)
+		for _, childNode := range childNodes {
+			nodes = append(nodes, *childNode)
+		}
 	}
 
 	return nodes, nil

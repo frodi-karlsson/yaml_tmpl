@@ -1,6 +1,6 @@
-<head><title>Stupid YAML Website</title><link rel="stylesheet" type="text/css" href="static/style.css"></link><meta name="viewport" content="width=device-width, initial-scale=1"></meta></head><html><body><content class="content"><h1 class="title">Welcome to "the Stupid YAML Website"</h1><div class="description"><p>The template is written in YAML, against any and all good sense.</p><p>I wanted to experiment with Go and parsing, and this is the result. Surprisingly, its quite easy to use and read... Maybe this is the future of web development?</p><p>Anyway, the source code for the server can be found <a href="https://github.com/frodi-karlsson/yaml_tmpl">here</a></p></div><div class="source"><p>You can also see the source YAML for this page below:</p><pre>head:
+<head><title>Stupid YAML Website</title><link rel="stylesheet" type="text/css" href="static/style.css"></link><meta name="viewport" content="width=device-width, initial-scale=1"></meta></head><html><body><content class="content"><h1 class="title">Welcome to "the Stupid YAML Website"</h1><div class="description"><p>The template is written in YAML, against any and all good sense.</p><p>I wanted to experiment with Go and parsing, and this is the result. Surprisingly, its quite easy to use and read... Maybe this is the future of web development?</p><p>Anyway, the source code for the server can be found <a href="https://github.com/frodi-karlsson/yaml_tmpl">here</a></p><p>This is a repeated paragraph. Its here to show that you can use YAML anchors and aliases.</p></div><div class="source"><p>You can also see the source YAML for this page below:</p><pre>head:
   children:
-    - title: &#34;Stupid YAML Website&#34;
+    - title: &#34;Stupid YAML Website&#34; # This is shorthand for children: - raw: &#34;...&#34;
     - link:
         rel: &#34;stylesheet&#34;
         type: &#34;text/css&#34;
@@ -8,34 +8,43 @@
     - meta:
         name: &#34;viewport&#34;
         content: &#34;width=device-width, initial-scale=1&#34;
+
+# This is an anchor. It behaves slightly differently from normal YAML anchors
+# to suit HTML better. The difference is that the value of the anchor is not
+# &#34;real&#34;, and only gets transpiled when it&#39;s aliased.
+# See further down in html for an example.
+content &amp;content:
+  class: &#34;content&#34;
+  children:
+    - h1:
+        class: &#34;title&#34;
+        innerText: &#34;Welcome to \&#34;the Stupid YAML Website\&#34;&#34; # This is shorthand for children: - raw: &#34;...&#34;. Similar to the title tag above, but when you also want to add attributes
+    - div:
+        class: &#34;description&#34;
+        children:
+          - p: &#34;The template is written in YAML, against any and all good sense.&#34;
+          - p: &#34;I wanted to experiment with Go and parsing, and this is the result. Surprisingly, it&#39;s quite easy to use and read... Maybe this is the future of web development?&#34;
+          - p:
+              children:
+                - raw: &#34;Anyway, the source code for the server can be found &#34;
+                - a:
+                    href: &#34;https://github.com/frodi-karlsson/yaml_tmpl&#34;
+                    innerText: &#34;here&#34;
+          - p: &#34;This is a repeated paragraph. It&#39;s here to show that you can use YAML anchors and aliases.&#34;
+    - div:
+        class: &#34;source&#34;
+        children:
+          - p: &#34;You can also see the source YAML for this page below:&#34;
+          - pre: &#34;{{ .YAML }}&#34;
+          - p: &#34;And the CSS below this:&#34;
+          - pre: &#34;{{ .CSS }}&#34;
+
 html:
   children:
-    body:
+    - body:
       children:
         - content:
-            class: &#34;content&#34;
-            children:
-              - h1:
-                  class: &#34;title&#34;
-                  innerText: &#34;Welcome to \&#34;the Stupid YAML Website\&#34;&#34;
-              - div:
-                  class: &#34;description&#34;
-                  children:
-                    - p: &#34;The template is written in YAML, against any and all good sense.&#34;
-                    - p: &#34;I wanted to experiment with Go and parsing, and this is the result. Surprisingly, it&#39;s quite easy to use and read... Maybe this is the future of web development?&#34;
-                    - p:
-                        children:
-                          - raw: &#34;Anyway, the source code for the server can be found &#34;
-                          - a:
-                              href: &#34;https://github.com/frodi-karlsson/yaml_tmpl&#34;
-                              innerText: &#34;here&#34;
-              - div:
-                  class: &#34;source&#34;
-                  children:
-                    - p: &#34;You can also see the source YAML for this page below:&#34;
-                    - pre: &#34;{{ .YAML }}&#34;
-                    - p: &#34;And the CSS below this:&#34;
-                    - pre: &#34;{{ .CSS }}&#34;</pre><p>And the CSS below this:</p><pre>html, body {
+          &lt;&lt;: *content</pre><p>And the CSS below this:</p><pre>html, body {
     height: 100%;
 }
 

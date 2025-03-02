@@ -8,31 +8,40 @@ head:
     - meta:
         name: "viewport"
         content: "width=device-width, initial-scale=1"
+
+# This is an anchor. It behaves slightly differently from normal YAML anchors
+# to suit HTML better. The difference is that the value of the anchor is not
+# "real", and only gets transpiled when it's aliased.
+# See further down in html for an example.
+content &content:
+  class: "content"
+  children:
+    - h1:
+        class: "title"
+        innerText: "Welcome to \"the Stupid YAML Website\"" # This is shorthand for children: - raw: "...". Similar to the title tag above, but when you also want to add attributes
+    - div:
+        class: "description"
+        children:
+          - p: "The template is written in YAML, against any and all good sense."
+          - p: "I wanted to experiment with Go and parsing, and this is the result. Surprisingly, it's quite easy to use and read... Maybe this is the future of web development?"
+          - p:
+              children:
+                - raw: "Anyway, the source code for the server can be found "
+                - a:
+                    href: "https://github.com/frodi-karlsson/yaml_tmpl"
+                    innerText: "here"
+          - p: "This is a repeated paragraph. It's here to show that you can use YAML anchors and aliases."
+    - div:
+        class: "source"
+        children:
+          - p: "You can also see the source YAML for this page below:"
+          - pre: "{{ .YAML }}"
+          - p: "And the CSS below this:"
+          - pre: "{{ .CSS }}"
+
 html:
   children:
     - body:
       children:
         - content:
-            class: "content"
-            children:
-              - h1:
-                  class: "title"
-                  innerText: "Welcome to \"the Stupid YAML Website\"" # This is shorthand for children: - raw: "...". Similar to the title tag above, but when you also want to add attributes
-              - div:
-                  class: "description"
-                  children:
-                    - p: "The template is written in YAML, against any and all good sense."
-                    - p: "I wanted to experiment with Go and parsing, and this is the result. Surprisingly, it's quite easy to use and read... Maybe this is the future of web development?"
-                    - p:
-                        children:
-                          - raw: "Anyway, the source code for the server can be found "
-                          - a:
-                              href: "https://github.com/frodi-karlsson/yaml_tmpl"
-                              innerText: "here"
-              - div:
-                  class: "source"
-                  children:
-                    - p: "You can also see the source YAML for this page below:"
-                    - pre: "{{ .YAML }}"
-                    - p: "And the CSS below this:"
-                    - pre: "{{ .CSS }}"
+          <<: *content

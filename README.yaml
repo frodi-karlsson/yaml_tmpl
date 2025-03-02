@@ -19,5 +19,9 @@ templatingLogic:
     - "Children of 'children' are html tags"
     - "'raw' as a child is parsed as a raw html string"
     - "For development simplicity, and lack of need, there is no difference between a sequence and a mapping"
-    - "No other yaml features are supported"
+    - aliases:
+        - "You can use YAML aliases and anchors to repeat content"
+        - "The value of an anchor is not transpiled until it's aliased"
+        - "This allows you to separate definition from use"
+        - "Overrides are also possible using \"<<: *anchor\" as expected"
     - "Because it's a transpiler, you can use Go templates in the yaml. For example, `pre: \"{{ .YAML }}\"`"

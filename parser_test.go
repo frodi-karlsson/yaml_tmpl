@@ -56,6 +56,19 @@ var SIMPLE_CHILDREN_NODE_WITH_ANCHOR_NAME = []string{
 	"  child: \"value\"",
 }
 
+var ALIAS_NODE = []string{
+	"tag: &anchor",
+	"  child: \"value\"",
+	"tag2: *anchor",
+}
+
+var OVERRIDE_NODE = []string{
+	"tag: &anchor",
+	"  child: \"value\"",
+	"tag2:",
+	"  <<: *anchor",
+}
+
 func TestParseSimpleDoubleQuoteNode(t *testing.T) {
 	// Test a simple raw node
 	nodes, err := yaml_tmpl.GetYamlNodesFromLines(SIMPLE_DOUBLE_QUOTE_RAW_NODE)
@@ -142,7 +155,7 @@ func TestParseSimpleChildrenNode(t *testing.T) {
 	res, msg := expectYamlNodeToEqual(t, node, yaml_tmpl.YamlNode{
 		Key:  "tag",
 		Type: yaml_tmpl.CHILDREN_YAML_NODE,
-		Children: []yaml_tmpl.YamlNode{
+		Children: []*yaml_tmpl.YamlNode{
 			{
 				Key:     "child",
 				Type:    yaml_tmpl.RAW_YAML_NODE,
@@ -172,11 +185,11 @@ func TestParseNestedChildrenNode(t *testing.T) {
 	res, msg := expectYamlNodeToEqual(t, node, yaml_tmpl.YamlNode{
 		Key:  "tag",
 		Type: yaml_tmpl.CHILDREN_YAML_NODE,
-		Children: []yaml_tmpl.YamlNode{
+		Children: []*yaml_tmpl.YamlNode{
 			{
 				Key:  "child",
 				Type: yaml_tmpl.CHILDREN_YAML_NODE,
-				Children: []yaml_tmpl.YamlNode{
+				Children: []*yaml_tmpl.YamlNode{
 					{
 						Key:     "nested1",
 						Type:    yaml_tmpl.RAW_YAML_NODE,
@@ -214,11 +227,11 @@ func TestParseDocumentNode(t *testing.T) {
 	res, msg := expectYamlNodeToEqual(t, head, yaml_tmpl.YamlNode{
 		Key:  "head",
 		Type: yaml_tmpl.CHILDREN_YAML_NODE,
-		Children: []yaml_tmpl.YamlNode{
+		Children: []*yaml_tmpl.YamlNode{
 			{
 				Key:  "children",
 				Type: yaml_tmpl.CHILDREN_YAML_NODE,
-				Children: []yaml_tmpl.YamlNode{
+				Children: []*yaml_tmpl.YamlNode{
 					{
 						Key:     "title",
 						Type:    yaml_tmpl.RAW_YAML_NODE,
@@ -227,7 +240,7 @@ func TestParseDocumentNode(t *testing.T) {
 					{
 						Key:  "link",
 						Type: yaml_tmpl.CHILDREN_YAML_NODE,
-						Children: []yaml_tmpl.YamlNode{
+						Children: []*yaml_tmpl.YamlNode{
 							{
 								Key:     "rel",
 								Type:    yaml_tmpl.RAW_YAML_NODE,
@@ -259,15 +272,15 @@ func TestParseDocumentNode(t *testing.T) {
 	res, msg = expectYamlNodeToEqual(t, body, yaml_tmpl.YamlNode{
 		Key:  "body",
 		Type: yaml_tmpl.CHILDREN_YAML_NODE,
-		Children: []yaml_tmpl.YamlNode{
+		Children: []*yaml_tmpl.YamlNode{
 			{
 				Key:  "children",
 				Type: yaml_tmpl.CHILDREN_YAML_NODE,
-				Children: []yaml_tmpl.YamlNode{
+				Children: []*yaml_tmpl.YamlNode{
 					{
 						Key:  "h1",
 						Type: yaml_tmpl.CHILDREN_YAML_NODE,
-						Children: []yaml_tmpl.YamlNode{
+						Children: []*yaml_tmpl.YamlNode{
 							{
 								Key:     "class",
 								Type:    yaml_tmpl.RAW_YAML_NODE,
@@ -302,27 +315,26 @@ func TestParseRawNodeWithAnchorName(t *testing.T) {
 		t.Error(err)
 	}
 
-	if len(nodes) != 1 {
-		t.Errorf("Expected 1 node, got %d", len(nodes))
-	}
-
-	node := nodes[0]
-
-	res, msg := expectYamlNodeToEqual(t, node, yaml_tmpl.YamlNode{
-		Key:        "tag",
-		Type:       yaml_tmpl.RAW_YAML_NODE,
-		Content:    "value",
-		AnchorName: "anchor",
-	})
-
-	if !res {
-		t.Error(msg)
+	if len(nodes) != 0 {
+		t.Errorf("Expected 0 nodes, got %d", len(nodes))
 	}
 }
 
 func TestParseSimpleChildrenNodeWithAnchorName(t *testing.T) {
 	// Test a simple children node
 	nodes, err := yaml_tmpl.GetYamlNodesFromLines(SIMPLE_CHILDREN_NODE_WITH_ANCHOR_NAME)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if len(nodes) != 0 {
+		t.Errorf("Expected 0 nodes, got %d", len(nodes))
+	}
+}
+
+func TestParseAliasNode(t *testing.T) {
+	// Test a simple children node
+	nodes, err := yaml_tmpl.GetYamlNodesFromLines(ALIAS_NODE)
 	if err != nil {
 		t.Error(err)
 	}
@@ -334,10 +346,46 @@ func TestParseSimpleChildrenNodeWithAnchorName(t *testing.T) {
 	node := nodes[0]
 
 	res, msg := expectYamlNodeToEqual(t, node, yaml_tmpl.YamlNode{
-		Key:        "tag",
+		Key:        "tag2",
 		Type:       yaml_tmpl.CHILDREN_YAML_NODE,
 		AnchorName: "anchor",
-		Children: []yaml_tmpl.YamlNode{
+		Children: []*yaml_tmpl.YamlNode{
+			{
+				Key:  "tag",
+				Type: yaml_tmpl.CHILDREN_YAML_NODE,
+				Children: []*yaml_tmpl.YamlNode{
+					{
+						Key:     "child",
+						Type:    yaml_tmpl.RAW_YAML_NODE,
+						Content: "value",
+					},
+				},
+			},
+		},
+	})
+
+	if !res {
+		t.Error(msg)
+	}
+}
+
+func TestParseOverrideNode(t *testing.T) {
+	// Test a simple children node
+	nodes, err := yaml_tmpl.GetYamlNodesFromLines(OVERRIDE_NODE)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if len(nodes) != 1 {
+		t.Errorf("Expected 1 node, got %d", len(nodes))
+	}
+
+	node := nodes[0]
+
+	res, msg := expectYamlNodeToEqual(t, node, yaml_tmpl.YamlNode{
+		Key:  "tag2",
+		Type: yaml_tmpl.CHILDREN_YAML_NODE,
+		Children: []*yaml_tmpl.YamlNode{
 			{
 				Key:     "child",
 				Type:    yaml_tmpl.RAW_YAML_NODE,
@@ -382,7 +430,7 @@ func _expectYamlNodeToEqual(t *testing.T, node yaml_tmpl.YamlNode, expected yaml
 			return false, fmt.Sprintf("Unexpected child at %d at %s", i, pathLogSuffix)
 		}
 
-		res, err := expectYamlNodeToEqual(t, child, expected.Children[i])
+		res, err := expectYamlNodeToEqual(t, *child, *expected.Children[i])
 		if !res {
 			return false, fmt.Sprintf("Unexpected result: %s for:\n%v", err, child)
 		}

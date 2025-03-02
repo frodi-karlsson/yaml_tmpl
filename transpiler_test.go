@@ -27,22 +27,22 @@ func getSimpleChildrenHtmlNode() yaml_tmpl.YamlNode {
 		Type: yaml_tmpl.CHILDREN_YAML_NODE,
 	}
 
-	children := yaml_tmpl.YamlNode{
+	children := &yaml_tmpl.YamlNode{
 		Key:    "children",
 		Type:   yaml_tmpl.CHILDREN_YAML_NODE,
 		Parent: &tag,
 	}
 
-	child := yaml_tmpl.YamlNode{
+	child := &yaml_tmpl.YamlNode{
 		Key:     "child",
 		Type:    yaml_tmpl.RAW_YAML_NODE,
 		Content: "value",
-		Parent:  &children,
+		Parent:  children,
 	}
 
-	children.Children = []yaml_tmpl.YamlNode{child}
+	children.Children = []*yaml_tmpl.YamlNode{child}
 
-	tag.Children = []yaml_tmpl.YamlNode{children}
+	tag.Children = []*yaml_tmpl.YamlNode{children}
 
 	return tag
 }
@@ -166,35 +166,35 @@ func BenchmarkTranspileSimpleChildrenNode(b *testing.B) {
 
 func BenchmarkTranspileSimpleChildrenNodeWithGrandchildren(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		tag := yaml_tmpl.YamlNode{
+		tag := &yaml_tmpl.YamlNode{
 			Key:  "tag",
 			Type: yaml_tmpl.CHILDREN_YAML_NODE,
 		}
 
-		children := yaml_tmpl.YamlNode{
+		children := &yaml_tmpl.YamlNode{
 			Key:    "children",
 			Type:   yaml_tmpl.CHILDREN_YAML_NODE,
-			Parent: &tag,
+			Parent: tag,
 		}
 
-		grandchildren := yaml_tmpl.YamlNode{
+		grandchildren := &yaml_tmpl.YamlNode{
 			Key:    "children",
 			Type:   yaml_tmpl.CHILDREN_YAML_NODE,
-			Parent: &children,
+			Parent: children,
 		}
 
-		grandchild := yaml_tmpl.YamlNode{
+		grandchild := &yaml_tmpl.YamlNode{
 			Key:     "grandchild",
 			Type:    yaml_tmpl.RAW_YAML_NODE,
 			Content: "value",
-			Parent:  &grandchildren,
+			Parent:  grandchildren,
 		}
 
-		grandchildren.Children = []yaml_tmpl.YamlNode{grandchild}
+		grandchildren.Children = []*yaml_tmpl.YamlNode{grandchild}
 
-		children.Children = []yaml_tmpl.YamlNode{grandchildren}
+		children.Children = []*yaml_tmpl.YamlNode{grandchildren}
 
-		tag.Children = []yaml_tmpl.YamlNode{children}
+		tag.Children = []*yaml_tmpl.YamlNode{children}
 
 		tag.Transpile(nil)
 	}
