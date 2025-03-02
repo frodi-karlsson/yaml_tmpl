@@ -22,8 +22,8 @@ func LoadTemplate(path string) (string, error) {
 
 	out := ""
 	for _, yamlNode := range yamlNodes {
-		htmlNode := TranspileNode(yamlNode, nil)
-		out += HtmlNodeToString(htmlNode)
+		htmlNode := yamlNode.Transpile(nil)
+		out += htmlNode.ToString()
 	}
 
 	return out, nil

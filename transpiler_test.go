@@ -50,7 +50,7 @@ func getSimpleChildrenHtmlNode() yaml_tmpl.YamlNode {
 func TestParseSimpleRawTagNode(t *testing.T) {
 	SIMPLE_RAW_TAG_HTML_NODE := getSimpleRawTagHtmlNode()
 
-	transpiled := yaml_tmpl.TranspileNode(SIMPLE_RAW_TAG_HTML_NODE, nil)
+	transpiled := SIMPLE_RAW_TAG_HTML_NODE.Transpile(nil)
 
 	res, err := expectHtmlNodeToEqual(t, transpiled, yaml_tmpl.HtmlNode{
 		Type: yaml_tmpl.TAG_HTML_NODE,
@@ -73,8 +73,8 @@ func TestParseSimpleRawTagNode(t *testing.T) {
 func TestPrintSimpleHtmlRawTagNode(t *testing.T) {
 	SIMPLE_RAW_TAG_HTML_NODE := getSimpleRawTagHtmlNode()
 
-	transpiled := yaml_tmpl.TranspileNode(SIMPLE_RAW_TAG_HTML_NODE, nil)
-	html := yaml_tmpl.HtmlNodeToString(transpiled)
+	transpiled := SIMPLE_RAW_TAG_HTML_NODE.Transpile(nil)
+	html := transpiled.ToString()
 	expected := "<tag>value</tag>"
 	if html != expected {
 		t.Errorf("Expected %s, got %s", expected, html)
@@ -84,7 +84,7 @@ func TestPrintSimpleHtmlRawTagNode(t *testing.T) {
 func TestParseSimpleHtmlChildrenNode(t *testing.T) {
 	SIMPLE_CHILDREN_HTML_NODE := getSimpleChildrenHtmlNode()
 
-	transpiled := yaml_tmpl.TranspileNode(SIMPLE_CHILDREN_HTML_NODE, nil)
+	transpiled := SIMPLE_CHILDREN_HTML_NODE.Transpile(nil)
 	res, err := expectHtmlNodeToEqual(t, transpiled, yaml_tmpl.HtmlNode{
 		Type: yaml_tmpl.TAG_HTML_NODE,
 		Tag:  "tag",

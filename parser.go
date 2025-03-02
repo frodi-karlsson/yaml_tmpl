@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-var QUOTE_TYPES = [...]string{"'", "\""}
+var _QUOTE_TYPES = [...]string{"'", "\""}
 
 type YamlNodeType int
 
@@ -87,7 +87,7 @@ func determineNodeType(lines []string) (YamlNodeType, error) {
 	}
 
 	// If the definition line contains a quotation as defined in QUOTE_TYPES, it is a raw node.
-	for _, quote := range QUOTE_TYPES {
+	for _, quote := range _QUOTE_TYPES {
 		if strings.Contains(lines[0], quote) {
 			return RAW_YAML_NODE, nil
 		}

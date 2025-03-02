@@ -29,7 +29,7 @@ type HtmlNode struct {
 
 // Transpiles a raw node to an html node. A raw node is a representation
 // of `tag: "content"` in yaml.
-func transpileRawNode(node YamlNode, parent *HtmlNode) HtmlNode {
+func (node *YamlNode) transpileRawNode(parent *HtmlNode) HtmlNode {
 	isRootHtmlElement := parent == nil
 	isChildElement := node.Parent != nil && node.Parent.Key == "children"
 	isAnyHtmlElement := isRootHtmlElement || isChildElement
@@ -85,7 +85,7 @@ func transpileRawNode(node YamlNode, parent *HtmlNode) HtmlNode {
 
 // Transpiles a children node to an html node. A children node is a representation
 // of `tag: anything: ...` in yaml.
-func transpileChildrenNode(node YamlNode, parent *HtmlNode) HtmlNode {
+func (node *YamlNode) transpileChildrenNode(parent *HtmlNode) HtmlNode {
 	htmlNode := HtmlNode{
 		Type:     TAG_HTML_NODE,
 		Tag:      node.Key,
@@ -98,10 +98,10 @@ func transpileChildrenNode(node YamlNode, parent *HtmlNode) HtmlNode {
 		// children: is special syntax to denote child elements.
 		if child.Type == CHILDREN_YAML_NODE && child.Key == "children" {
 			for _, grandchild := range child.Children {
-				children = append(children, TranspileNode(grandchild, &htmlNode))
+				children = append(children, grandchild.Transpile(&htmlNode))
 			}
 		} else {
-			children = append(children, TranspileNode(child, &htmlNode))
+			children = append(children, child.Transpile(&htmlNode))
 		}
 	}
 
@@ -111,13 +111,13 @@ func transpileChildrenNode(node YamlNode, parent *HtmlNode) HtmlNode {
 }
 
 // Determines the type of a node based on its content.
-func TranspileNode(node YamlNode, parent *HtmlNode) HtmlNode {
+func (node *YamlNode) Transpile(parent *HtmlNode) HtmlNode {
 	switch node.Type {
 	case RAW_YAML_NODE:
-		return transpileRawNode(node, parent)
+		return node.transpileRawNode(parent)
 
 	case CHILDREN_YAML_NODE:
-		return transpileChildrenNode(node, parent)
+		return node.transpileChildrenNode(parent)
 	default:
 		return HtmlNode{
 			Type:   UNKNOWN_HTML_NODE,
@@ -142,7 +142,7 @@ func splitHtmlNodesByIsType(nodes []HtmlNode, nodeType HtmlNodeType) (matching [
 }
 
 // Converts an HTML node to a string.
-func HtmlNodeToString(node HtmlNode) string {
+func (node *HtmlNode) ToString() string {
 	switch node.Type {
 	case RAW_HTML_NODE:
 		return node.Content
@@ -159,7 +159,7 @@ func HtmlNodeToString(node HtmlNode) string {
 		}
 
 		for _, child := range otherChildren {
-			children += HtmlNodeToString(child)
+			children += child.ToString()
 		}
 
 		return "<" + node.Tag + attributes + ">" + children + "</" + node.Tag + ">"
